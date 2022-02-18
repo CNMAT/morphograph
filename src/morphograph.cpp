@@ -26,10 +26,9 @@ int main (int argc, char* argv[]) {
 		p.zoom = 3;
 
 		Morphograph g ("test.svg", &p);
-		//g.add_layer ("../../samples/Brahms_4.wav", "rectangles");
+		g.add_layer ("../../samples/Brahms_4.wav", "rectangles");
 		g.add_layer ("../../samples/Koonitz.wav", "circles");
 		//g.add_layer ("../../samples/drops.wav", "letters");
-		//g.add_layer ("../../samples/sweep_01.wav", "circles");
 		g.render ();
 
 	} catch (exception& e) {
