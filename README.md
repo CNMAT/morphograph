@@ -17,4 +17,3 @@ The tool will produce a file called test.svg in the same folder. To test other s
 
 (c) 2021 by Carmine E. Cella
 
-# morphograph
