@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
+
+<c74object name="morphograph" module="n/a">
+
+    <digest>
+		analyze an audio buffer, and export a graphic score
+    </digest>
+
+    <description>
+	The morphograph object performs different types of analyses on audio material.  It allows the user to specify these analyses, and how they will affect graphic objects in an output SVG score.  
+    </description>
+
+    <!--DISCUSSION-->
+    <discussion>
+	The morphograph object comes out of Linda Bouchard's "Ocular Scores" series of works.  The pieces focus on generating graphic material from recorded musicians, mapping it onto relevant visual parameters, and displaying this alongside them as they play.  There have been many iterations of the piece, all with variations on these core themes.  Some of the pieces are interpretations of previously generated Ocular Scores, and some are the interpretation of musicians' output as they interpret existing scores.
+    </discussion>
+
+    <!--METADATA-->
+    <metadatalist>
+	<metadata name="author">Jeff Lubow, Carmine Cella</metadata>
+	<metadata name="tag">Analysis</metadata>
+	<metadata name="tag">Composition</metadata>
+	<metadata name="tag">Generative</metadata>
+    </metadatalist>
+
+    <!--INLETS-->
+    <inletlist>
+    	<inlet id="0" type="INLET_TYPE">
+			<digest>
+				digest info inlet 1
+			</digest>
+			<description>
+				full description inlet 1
+			</description>
+		</inlet>
+		<inlet id="1" type="INLET_TYPE">
+			<digest>
+				digest info inlet 2
+			</digest>
+			<description>
+				full description inlet 2
+			</description>
+		</inlet>
+    </inletlist>
+
+    <!--OUTLETS-->
+    <outletlist>
+    	<outlet id="0" type="OUTLET_TYPE">
+			<digest>
+				digest info outlet 1
+			</digest>
+			<description>
+				full description oulet 1
+			</description>
+		</outlet>
+		<outlet id="1" type="OUTLET_TYPE">
+			<digest>
+				digest info outlet 2
+			</digest>
+			<description>
+				full description outlet 2
+			</description>
+		</outlet>
+    </outletlist>
+
+    <!--ARGUMENTS-->
+    <objarglist>
+    	<!-- optional: 1 is yes; 0 is no -->
+    	<objarg name="n/a" optional="1" type="symbol">
+			<digest>
+				digest info arg 1 some name
+			</digest>
+			<description>
+				full description of arg 1 
+			</description>
+		</objarg>
+    </objarglist>
+
+    <!--ATTRIBUTES-->
+    <attributelist>
+
+	<attribute name="p_height" get="1" set="1" type="int" size="1">
+	    <description>
+		set the SVG height in pixels
+	    </description>
+	</attribute>
+	<attribute name="p_width" get="1" set="1" type="int" size="1">
+	    <description>
+		set the SVG width in pixels
+	    </description>
+	</attribute>
+	<attribute name="p_zoom" get="1" set="1" type="int" size="1">
+	    <description>
+		set the SVG zoom as a factor (1 is "normal").  0.001 to 5.
+	    </description>
+	</attribute>
+
+	<attribute name="p_fftsize" get="1" set="1" type="int" size="1">
+	    <description>
+		analysis fft fize
+	    </description>
+	</attribute>
+	<attribute name="p_hopsize" get="1" set="1" type="int" size="1">
+	    <description>
+		analysis hop size
+	    </description>
+	</attribute>
+	<attribute name="p_samplerate" get="1" set="1" type="int" size="1">
+	    <description>
+		analysis sample rate (can differ from buffer~ sample rate)
+	    </description>
+	</attribute>
+
+    </attributelist>
+
+    <!--MESSAGES-->
+    <methodlist>
+
+		<method name="bang">
+			<arglist />
+			<digest>
+				description of what bang does
+			</digest>
+			<description>
+				Redraws the contents of the <o>buffer~</o> object's waveform display window. You can open the display window by double-clicking on the <o>buffer~</o> object.
+			</description>
+		</method>
+		<method name="dictionary">
+			<arglist>
+				<arg name="name" optional="0" type="symbol" />
+			</arglist>
+			<digest>
+				Send in a dictionary to set up the behavior of the Morphograph, and/or render.
+			</digest>
+			<description>
+				The configuration of <o>morphograph</o> can be altered by the way a dictionary is formatted.  See [mapping api] in the help patcher for more info.
+			</description>
+		</method>
+		<method name="set">
+			<arglist>
+				<arg name="bufname" optional="0" type="symbol" />
+			</arglist>
+			<digest>
+				Set/reference an MSP buffer~
+			</digest>
+			<description>
+				Use the set message to associate a particular MSP buffer~ with <o>morphograph</o>.  This is the buffer data that will be pulled from in the analysis phase when generating a graph for output.
+			</description>
+		</method>
+		<method name="set_path">
+			<arglist>
+				<arg name="path" optional="0" type="symbol" />
+			</arglist>
+			<digest>
+				Set the activity path.
+			</digest>
+			<description>
+				Designate a path whereby <o>morphograph</o> can export files to while in use.
+			</description>
+		</method>
+
+    </methodlist>
+
+    <!--SEEALSO-->
+    <seealsolist>
+    </seealsolist>
+
+
+    <inletlist>
+    	<inlet id="0" type="INLET_TYPE">
+			<digest>
+				digest info inlet 1
+			</digest>
+			<description>
+				full description inlet 1
+			</description>
+		</inlet>
+		<inlet id="1" type="INLET_TYPE">
+			<digest>
+				digest info inlet 2
+			</digest>
+			<description>
+				full description inlet 2
+			</description>
+		</inlet>
+    </inletlist>
+
+	<outletlist>
+		<outlet id="0" type="OUTLET_TYPE">
+			<digest>
+				digest info outlet 1
+			</digest>
+			<description>
+				full description oulet 1
+			</description>
+		</outlet>
+		<outlet id="1" type="OUTLET_TYPE">
+			<digest>
+				digest info outlet 2
+			</digest>
+			<description>
+				full description outlet 2
+			</description>
+		</outlet>
+	</outletlist>
+
+    <misc name = "Discussion">
+	<entry name ="More details">
+	    <description>
+	    </description>
+	</entry>
+	<entry name ="Keywords">
+	    <description>
+		morph, graph, svg, score, analysis, buffer, composition
+	    </description>
+	</entry>
+    </misc>
+
+</c74object>
