@@ -130,7 +130,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nif test \"$CONFIGURATION\" = \"Debug\"; then :\n  cd \"/Users/jml/Documents/Max 8/Packages/max-sdk/build/source/misc/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/misc/morphograph/../../../externals/morphograph.mxo/Contents/PkgInfo\nfi\nif test \"$CONFIGURATION\" = \"Release\"; then :\n  cd \"/Users/jml/Documents/Max 8/Packages/max-sdk/build/source/misc/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/misc/morphograph/../../../externals/morphograph.mxo/Contents/PkgInfo\nfi\nif test \"$CONFIGURATION\" = \"MinSizeRel\"; then :\n  cd \"/Users/jml/Documents/Max 8/Packages/max-sdk/build/source/misc/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/misc/morphograph/../../../externals/morphograph.mxo/Contents/PkgInfo\nfi\nif test \"$CONFIGURATION\" = \"RelWithDebInfo\"; then :\n  cd \"/Users/jml/Documents/Max 8/Packages/max-sdk/build/source/misc/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/misc/morphograph/../../../externals/morphograph.mxo/Contents/PkgInfo\nfi\n";
+			shellScript = "set -e\nif test \"$CONFIGURATION\" = \"Debug\"; then :\n  cd \"/Users/jml/Documents/programming/git_repositories/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/programming/git_repositories/morphograph/externals/morphograph.mxo/Contents/PkgInfo\nfi\nif test \"$CONFIGURATION\" = \"Release\"; then :\n  cd \"/Users/jml/Documents/programming/git_repositories/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/programming/git_repositories/morphograph/externals/morphograph.mxo/Contents/PkgInfo\nfi\nif test \"$CONFIGURATION\" = \"MinSizeRel\"; then :\n  cd \"/Users/jml/Documents/programming/git_repositories/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/programming/git_repositories/morphograph/externals/morphograph.mxo/Contents/PkgInfo\nfi\nif test \"$CONFIGURATION\" = \"RelWithDebInfo\"; then :\n  cd \"/Users/jml/Documents/programming/git_repositories/morphograph\"\n  cp /Users/jml/Documents/Max\\ 8/Packages/max-sdk/source/max-sdk-base/script/PkgInfo /Users/jml/Documents/programming/git_repositories/morphograph/externals/morphograph.mxo/Contents/PkgInfo\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -156,7 +156,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk;
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 			};
 			name = RelWithDebInfo;
 		};
@@ -168,7 +168,7 @@
 					arm64,
 				);
 				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/jml/Desktop/test_export/try_two/morphograph/externals;
+				CONFIGURATION_BUILD_DIR = /Users/jml/Documents/programming/git_repositories/morphograph/externals;
 				EXECUTABLE_PREFIX = "";
 				EXECUTABLE_SUFFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -191,7 +191,7 @@
 					"\"/Users/jml/Documents/Max 8/Packages/max-sdk/source/max-sdk-base/script/../c74support/jit-includes\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = /Users/jml/Desktop/test_export/try_two/morphograph/CMakeFiles/morphograph.dir/Info.plist;
+				INFOPLIST_FILE = /Users/jml/Documents/programming/git_repositories/morphograph/CMakeFiles/morphograph.dir/Info.plist;
 				INSTALL_PATH = "";
 				LIBRARY_STYLE = BUNDLE;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -4673,7 +4673,7 @@
 				PRODUCT_NAME = morphograph;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "$(inherited)";
 				WRAPPER_EXTENSION = mxo;
@@ -4688,7 +4688,7 @@
 					arm64,
 				);
 				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/jml/Desktop/test_export/try_two/morphograph/externals/RelWithDebInfo;
+				CONFIGURATION_BUILD_DIR = /Users/jml/Documents/programming/git_repositories/morphograph/externals/RelWithDebInfo;
 				EXECUTABLE_PREFIX = "";
 				EXECUTABLE_SUFFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -4711,7 +4711,7 @@
 					"\"/Users/jml/Documents/Max 8/Packages/max-sdk/source/max-sdk-base/script/../c74support/jit-includes\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = /Users/jml/Desktop/test_export/try_two/morphograph/CMakeFiles/morphograph.dir/Info.plist;
+				INFOPLIST_FILE = /Users/jml/Documents/programming/git_repositories/morphograph/CMakeFiles/morphograph.dir/Info.plist;
 				INSTALL_PATH = "";
 				LIBRARY_STYLE = BUNDLE;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -9195,7 +9195,7 @@
 				PRODUCT_NAME = morphograph;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "$(inherited)";
 				WRAPPER_EXTENSION = mxo;
@@ -9210,7 +9210,7 @@
 					arm64,
 				);
 				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = "/Users/jml/Desktop/test_export/try_two/morphograph/externals/MinSizeRel\n";
+				CONFIGURATION_BUILD_DIR = "/Users/jml/Documents/programming/git_repositories/morphograph/externals/MinSizeRel\n";
 				EXECUTABLE_PREFIX = "";
 				EXECUTABLE_SUFFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9233,7 +9233,7 @@
 					"\"/Users/jml/Documents/Max 8/Packages/max-sdk/source/max-sdk-base/script/../c74support/jit-includes\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = /Users/jml/Desktop/test_export/try_two/morphograph/CMakeFiles/morphograph.dir/Info.plist;
+				INFOPLIST_FILE = /Users/jml/Documents/programming/git_repositories/morphograph/CMakeFiles/morphograph.dir/Info.plist;
 				INSTALL_PATH = "";
 				LIBRARY_STYLE = BUNDLE;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -13717,7 +13717,7 @@
 				PRODUCT_NAME = morphograph;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "$(inherited)";
 				WRAPPER_EXTENSION = mxo;
@@ -13733,7 +13733,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk;
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 			};
 			name = Release;
 		};
@@ -13746,7 +13746,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk;
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 			};
 			name = MinSizeRel;
 		};
@@ -13759,7 +13759,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.1.sdk;
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 			};
 			name = Debug;
 		};
@@ -13771,7 +13771,7 @@
 					arm64,
 				);
 				COMBINE_HIDPI_IMAGES = YES;
-				CONFIGURATION_BUILD_DIR = /Users/jml/Desktop/test_export/try_two/morphograph/externals;
+				CONFIGURATION_BUILD_DIR = /Users/jml/Documents/programming/git_repositories/morphograph/externals;
 				EXECUTABLE_PREFIX = "";
 				EXECUTABLE_SUFFIX = "";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -13794,7 +13794,7 @@
 					"\"/Users/jml/Documents/Max 8/Packages/max-sdk/source/max-sdk-base/script/../c74support/jit-includes\"",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = /Users/jml/Desktop/test_export/try_two/morphograph/CMakeFiles/morphograph.dir/Info.plist;
+				INFOPLIST_FILE = /Users/jml/Documents/programming/git_repositories/morphograph/CMakeFiles/morphograph.dir/Info.plist;
 				INSTALL_PATH = "";
 				LIBRARY_STYLE = BUNDLE;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -18278,7 +18278,7 @@
 				PRODUCT_NAME = morphograph;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
-				SYMROOT = /Users/jml/Desktop/test_export/try_two/morphograph/build;
+				SYMROOT = /Users/jml/Documents/programming/git_repositories/morphograph/build;
 				USE_HEADERMAP = NO;
 				WARNING_CFLAGS = "$(inherited)";
 				WRAPPER_EXTENSION = mxo;

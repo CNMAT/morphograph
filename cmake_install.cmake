@@ -1,4 +1,4 @@
-# Install script for directory: /Users/jml/Documents/Max 8/Packages/max-sdk/source/misc/morphograph
+# Install script for directory: /Users/jml/Documents/programming/git_repositories/morphograph/source
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
