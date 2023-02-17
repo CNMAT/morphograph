@@ -1,6 +1,6 @@
 .DS_Store
-build
-xcuserdata
 *.out
 *.pch
 *.mxo
+xcuserdata/
+build/
