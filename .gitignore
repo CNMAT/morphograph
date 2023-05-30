@@ -3,4 +3,4 @@
 *.pch
 *.mxo
 xcuserdata/
-build
+build/
