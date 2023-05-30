@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <?xml-stylesheet href="./_c74_ref.xsl" type="text/xsl"?>
 
-<c74object name="morphograph" module="n/a">
+<c74object name="Ocular Scores: morphograph" module="n/a">
 
     <digest>
 		analyze an audio buffer, and export a graphic score
@@ -18,7 +18,7 @@
 
     <!--METADATA-->
     <metadatalist>
-	<metadata name="author">Jeff Lubow, Carmine Cella</metadata>
+	<metadata name="author">Linda Bouchard, Jeff Lubow, Carmine Cella</metadata>
 	<metadata name="tag">Analysis</metadata>
 	<metadata name="tag">Composition</metadata>
 	<metadata name="tag">Generative</metadata>

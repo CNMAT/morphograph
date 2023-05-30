@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 86.0, 104.0, 1009.0, 647.0 ],
+		"rect" : [ 196.0, 129.0, 985.0, 642.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -21,12 +21,12 @@
 		"gridsnaponopen" : 1,
 		"objectsnaponopen" : 1,
 		"statusbarvisible" : 2,
-		"toolbarvisible" : 1,
-		"lefttoolbarpinned" : 0,
-		"toptoolbarpinned" : 0,
-		"righttoolbarpinned" : 0,
-		"bottomtoolbarpinned" : 0,
-		"toolbars_unpinned_last_save" : 0,
+		"toolbarvisible" : 0,
+		"lefttoolbarpinned" : 2,
+		"toptoolbarpinned" : 2,
+		"righttoolbarpinned" : 2,
+		"bottomtoolbarpinned" : 2,
+		"toolbars_unpinned_last_save" : 15,
 		"tallnewobj" : 0,
 		"boxanimatetime" : 200,
 		"enablehscroll" : 1,
@@ -40,12 +40,255 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-54",
+					"maxclass" : "newobj",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "signal" ],
+					"patcher" : 					{
+						"fileversion" : 1,
+						"appversion" : 						{
+							"major" : 8,
+							"minor" : 3,
+							"revision" : 3,
+							"architecture" : "x64",
+							"modernui" : 1
+						}
+,
+						"classnamespace" : "box",
+						"rect" : [ 59.0, 104.0, 640.0, 480.0 ],
+						"bglocked" : 0,
+						"openinpresentation" : 0,
+						"default_fontsize" : 14.0,
+						"default_fontface" : 0,
+						"default_fontname" : "Arial",
+						"gridonopen" : 1,
+						"gridsize" : [ 15.0, 15.0 ],
+						"gridsnaponopen" : 1,
+						"objectsnaponopen" : 1,
+						"statusbarvisible" : 2,
+						"toolbarvisible" : 1,
+						"lefttoolbarpinned" : 0,
+						"toptoolbarpinned" : 0,
+						"righttoolbarpinned" : 0,
+						"bottomtoolbarpinned" : 0,
+						"toolbars_unpinned_last_save" : 0,
+						"tallnewobj" : 0,
+						"boxanimatetime" : 200,
+						"enablehscroll" : 1,
+						"enablevscroll" : 1,
+						"devicewidth" : 0.0,
+						"description" : "",
+						"digest" : "",
+						"tags" : "",
+						"style" : "",
+						"subpatcher_template" : "Untitled5_template",
+						"assistshowspatchername" : 0,
+						"boxes" : [ 							{
+								"box" : 								{
+									"id" : "obj-42",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 50.0, 100.0, 95.0, 24.0 ],
+									"text" : "prepend open"
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"id" : "obj-29",
+									"maxclass" : "newobj",
+									"numinlets" : 2,
+									"numoutlets" : 2,
+									"outlettype" : [ "signal", "bang" ],
+									"patching_rect" : [ 118.0, 134.0, 53.0, 24.0 ],
+									"text" : "sfplay~"
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"comment" : "",
+									"id" : "obj-43",
+									"index" : 2,
+									"maxclass" : "inlet",
+									"numinlets" : 0,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 94.0, 36.0, 30.0, 30.0 ]
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"comment" : "",
+									"id" : "obj-51",
+									"index" : 1,
+									"maxclass" : "inlet",
+									"numinlets" : 0,
+									"numoutlets" : 1,
+									"outlettype" : [ "int" ],
+									"patching_rect" : [ 28.0, 36.0, 30.0, 30.0 ]
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"comment" : "",
+									"id" : "obj-53",
+									"index" : 1,
+									"maxclass" : "outlet",
+									"numinlets" : 1,
+									"numoutlets" : 0,
+									"patching_rect" : [ 118.0, 216.0, 30.0, 30.0 ]
+								}
+
+							}
+ ],
+						"lines" : [ 							{
+								"patchline" : 								{
+									"destination" : [ "obj-53", 0 ],
+									"source" : [ "obj-29", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-29", 0 ],
+									"source" : [ "obj-42", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-42", 0 ],
+									"source" : [ "obj-43", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-29", 0 ],
+									"source" : [ "obj-51", 0 ]
+								}
+
+							}
+ ]
+					}
+,
+					"patching_rect" : [ 441.5, 482.0, 66.0, 22.0 ],
+					"saved_object_attributes" : 					{
+						"description" : "",
+						"digest" : "",
+						"fontsize" : 14.0,
+						"globalpatchername" : "",
+						"tags" : ""
+					}
+,
+					"text" : "p playback"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"channels" : 1,
+					"id" : "obj-38",
+					"lastchannelcount" : 0,
+					"maxclass" : "live.gain~",
+					"numinlets" : 1,
+					"numoutlets" : 4,
+					"outlettype" : [ "signal", "", "float", "list" ],
+					"parameter_enable" : 1,
+					"patching_rect" : [ 441.5, 512.0, 37.0, 107.0 ],
+					"saved_attribute_attributes" : 					{
+						"valueof" : 						{
+							"parameter_longname" : "out",
+							"parameter_mmax" : 6.0,
+							"parameter_mmin" : -70.0,
+							"parameter_shortname" : "out",
+							"parameter_type" : 0,
+							"parameter_unitstyle" : 4
+						}
+
+					}
+,
+					"varname" : "live.gain~"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-37",
+					"maxclass" : "ezdac~",
+					"numinlets" : 2,
+					"numoutlets" : 0,
+					"patching_rect" : [ 488.0, 587.5, 32.0, 32.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-34",
+					"maxclass" : "toggle",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "int" ],
+					"parameter_enable" : 0,
+					"patching_rect" : [ 413.0, 482.0, 22.0, 22.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 13.0,
+					"id" : "obj-27",
+					"linecount" : 3,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 101.0, 94.0, 426.0, 53.0 ],
+					"text" : "The Ocular Scores Morphograph object performs user-specified analyses on audio material.  It allows the user to choose how these analyses will affect graphic objects in an output SVG score",
+					"textcolor" : [ 0.537254901960784, 0.537254901960784, 0.537254901960784, 1.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 13.0,
+					"id" : "obj-23",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 101.0, 68.0, 372.0, 22.0 ],
+					"text" : "analyze an audio buffer, and export graphic score elements"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Lato",
+					"fontsize" : 36.0,
+					"id" : "obj-17",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 101.0, 27.0, 611.0, 50.0 ],
+					"text" : "Ocular Scores, featuring Morphograph"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-15",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 830.0, 499.5, 58.0, 22.0 ],
+					"patching_rect" : [ 859.0, 452.0, 58.0, 22.0 ],
 					"text" : "loadbang"
 				}
 
@@ -53,13 +296,13 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-12",
-					"linecount" : 5,
+					"linecount" : 4,
 					"maxclass" : "message",
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 830.0, 529.5, 114.0, 76.0 ],
-					"text" : "/Users/jml/Documents/freelance/linda_bouchard/mgraph_project/mgraph_patchers/"
+					"patching_rect" : [ 859.0, 482.0, 114.0, 62.0 ],
+					"text" : "/Users/jml/Documents/freelance/linda_bouchard/mgraph_project/demo/"
 				}
 
 			}
@@ -69,9 +312,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 298.5, 212.0, 22.0, 20.0 ],
+					"patching_rect" : [ 308.5, 208.0, 22.0, 20.0 ],
 					"text" : "3. ",
-					"textcolor" : [ 1.0, 0.058823529411765, 0.058823529411765, 1.0 ]
+					"textcolor" : [ 0.988235294117647, 0.0, 0.996078431372549, 1.0 ]
 				}
 
 			}
@@ -81,9 +324,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 806.0, 367.0, 150.0, 20.0 ],
+					"patching_rect" : [ 816.0, 363.0, 150.0, 20.0 ],
 					"text" : "1. define SVG write path",
-					"textcolor" : [ 1.0, 0.058823529411765, 0.058823529411765, 1.0 ]
+					"textcolor" : [ 0.988235294117647, 0.0, 0.996078431372549, 1.0 ]
 				}
 
 			}
@@ -94,7 +337,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 5,
 					"outlettype" : [ "", "", "", "", "" ],
-					"patching_rect" : [ 780.0, 425.0, 90.0, 22.0 ],
+					"patching_rect" : [ 790.0, 421.0, 90.0, 22.0 ],
 					"text" : "regexp .+:(.+)"
 				}
 
@@ -107,7 +350,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 780.0, 367.0, 24.0, 24.0 ]
+					"patching_rect" : [ 790.0, 363.0, 24.0, 24.0 ]
 				}
 
 			}
@@ -118,7 +361,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
-					"patching_rect" : [ 780.0, 401.0, 90.0, 22.0 ],
+					"patching_rect" : [ 790.0, 397.0, 90.0, 22.0 ],
 					"text" : "opendialog fold"
 				}
 
@@ -130,24 +373,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 316.5, 212.0, 51.0, 22.0 ],
+					"patching_rect" : [ 326.5, 208.0, 51.0, 22.0 ],
 					"text" : "process"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"border" : 0,
-					"filename" : "helpdetails.js",
-					"id" : "obj-2",
-					"ignoreclick" : 1,
-					"jsarguments" : [ "morphograph" ],
-					"maxclass" : "jsui",
-					"numinlets" : 1,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"parameter_enable" : 0,
-					"patching_rect" : [ 14.0, 15.5, 637.0, 113.0 ]
 				}
 
 			}
@@ -229,7 +456,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 55.0, 247.0, 109.0, 24.0 ],
-									"text" : "713728."
+									"text" : "416990."
 								}
 
 							}
@@ -357,7 +584,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 285.0, 596.5, 51.0, 22.0 ],
+					"patching_rect" : [ 295.0, 587.5, 51.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -377,9 +604,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 566.0, 159.5, 150.0, 33.0 ],
+					"patching_rect" : [ 576.0, 155.5, 150.0, 33.0 ],
 					"text" : "2. dbl-click for example specification; edit",
-					"textcolor" : [ 1.0, 0.058823529411765, 0.058823529411765, 1.0 ]
+					"textcolor" : [ 0.988235294117647, 0.0, 0.996078431372549, 1.0 ]
 				}
 
 			}
@@ -389,7 +616,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 24.0, 307.0, 94.0, 20.0 ],
+					"patching_rect" : [ 34.0, 303.0, 94.0, 20.0 ],
 					"text" : "post information"
 				}
 
@@ -400,7 +627,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 28.0, 190.0, 93.0, 20.0 ],
+					"patching_rect" : [ 37.0, 186.0, 93.0, 20.0 ],
 					"text" : "set active buffer"
 				}
 
@@ -411,7 +638,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 183.0, 190.0, 110.0, 20.0 ],
+					"patching_rect" : [ 192.0, 186.0, 110.0, 20.0 ],
 					"text" : "set svg export path"
 				}
 
@@ -419,11 +646,10 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-26",
-					"linecount" : 2,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 418.0, 159.5, 76.0, 33.0 ],
+					"patching_rect" : [ 413.0, 186.0, 124.0, 20.0 ],
 					"text" : "load svg file from disk"
 				}
 
@@ -436,7 +662,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 389.0, 159.5, 24.0, 24.0 ]
+					"patching_rect" : [ 399.0, 155.5, 24.0, 24.0 ]
 				}
 
 			}
@@ -447,7 +673,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 389.0, 237.0, 79.0, 22.0 ],
+					"patching_rect" : [ 399.0, 233.0, 79.0, 22.0 ],
 					"text" : "prepend load"
 				}
 
@@ -459,7 +685,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
-					"patching_rect" : [ 389.0, 212.0, 133.0, 22.0 ],
+					"patching_rect" : [ 399.0, 208.0, 133.0, 22.0 ],
 					"text" : "opendialog @types svg"
 				}
 
@@ -518,7 +744,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 796.0, 367.0, 140.0, 87.0 ],
+									"patching_rect" : [ 796.0, 367.0, 143.0, 87.0 ],
 									"text" : "hint:  the transform properties that you issue with the input dictionary determine the default dimensions for the generated shapes."
 								}
 
@@ -1756,7 +1982,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 780.0, 310.152261123267749, 87.0, 22.0 ],
+					"patching_rect" : [ 790.0, 306.152261123267749, 122.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -1765,7 +1991,7 @@
 						"tags" : ""
 					}
 ,
-					"text" : "p mapping_api"
+					"text" : "p \"mapping api / info\""
 				}
 
 			}
@@ -1776,7 +2002,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 107.0, 549.0, 95.0, 22.0 ],
+					"patching_rect" : [ 117.0, 540.0, 95.0, 22.0 ],
 					"text" : "prepend replace"
 				}
 
@@ -1788,7 +2014,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 39.0, 486.0, 85.0, 22.0 ],
+					"patching_rect" : [ 49.0, 474.0, 85.0, 22.0 ],
 					"text" : "prepend prefix"
 				}
 
@@ -1800,7 +2026,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 39.0, 457.0, 80.0, 22.0 ],
+					"patching_rect" : [ 49.0, 445.0, 80.0, 22.0 ],
 					"text" : "r morphopath"
 				}
 
@@ -1811,7 +2037,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 798.0, 467.652261123267749, 82.0, 22.0 ],
+					"patching_rect" : [ 808.0, 575.652261123267749, 82.0, 22.0 ],
 					"text" : "s morphopath"
 				}
 
@@ -1823,7 +2049,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 170.0, 159.5, 80.0, 22.0 ],
+					"patching_rect" : [ 180.0, 155.5, 80.0, 22.0 ],
 					"text" : "r morphopath"
 				}
 
@@ -1832,14 +2058,14 @@
 				"box" : 				{
 					"autopopulate" : 1,
 					"id" : "obj-25",
-					"items" : [ "Brahms_4.wav", ",", "Koonitz.wav" ],
+					"items" : [ "Allora_1_prt1.aif", ",", "BassGesture.aif", ",", "BowedCymbalNORM.wav", ",", "Brahms_4.wav", ",", "Calzadilla_1.aif", ",", "Coda_Box3_a.aif", ",", "Cymbal_onHead2.wav", ",", "Koonitz.wav", ",", "LoriFreedman_Improv4.wav", ",", "Meandre_1.aif", ",", "Pointillistic.aif", ",", "ReceidingSimple.aif", ",", "Scen2Box(a).aif", ",", "scene 3-box 4.aif", ",", "SustainedTextured_Crackel-Mix.aif", ",", "tongue6.wav", ",", "tongue7_FH.wav", ",", "TrombDrum.wav" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "int", "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 39.0, 521.0, 155.0, 22.0 ],
-					"prefix" : "~/Documents/freelance/linda_bouchard/mgraph_project/mgraph_patchers/",
+					"patching_rect" : [ 49.0, 513.0, 155.0, 22.0 ],
+					"prefix" : "~/Documents/freelance/linda_bouchard/mgraph_project/demo/",
 					"types" : [ "WAVE", "AIFF", "MP3" ]
 				}
 
@@ -1851,7 +2077,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
-					"patching_rect" : [ 14.0, 159.5, 58.0, 22.0 ],
+					"patching_rect" : [ 24.0, 155.5, 58.0, 22.0 ],
 					"text" : "loadbang"
 				}
 
@@ -2032,7 +2258,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 780.0, 336.152261123267749, 80.0, 22.0 ],
+					"patching_rect" : [ 790.0, 332.152261123267749, 80.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -2051,7 +2277,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 716.0, 190.0, 150.0, 20.0 ],
+					"patching_rect" : [ 726.0, 186.0, 150.0, 20.0 ],
 					"text" : "errors if cannot find"
 				}
 
@@ -2063,7 +2289,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 170.0, 212.0, 102.0, 22.0 ],
+					"patching_rect" : [ 180.0, 208.0, 102.0, 22.0 ],
 					"text" : "prepend set_path"
 				}
 
@@ -2075,7 +2301,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "dictionary" ],
-					"patching_rect" : [ 540.0, 271.0, 29.0, 22.0 ],
+					"patching_rect" : [ 550.0, 254.0, 29.0, 22.0 ],
 					"text" : "thru"
 				}
 
@@ -2088,7 +2314,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 540.0, 159.5, 24.0, 24.0 ]
+					"patching_rect" : [ 550.0, 107.5, 44.5, 44.5 ]
 				}
 
 			}
@@ -2097,18 +2323,18 @@
 					"data" : 					{
 						"filename" : "mgraph_example.svg",
 						"shape" : "triangles",
-						"style" : "stroke",
+						"style" : "both",
 						"descmap" : 						{
 							"energy" : "size",
-							"zcr" : "ylocation",
-							"speckurt" : "xscale",
-							"speccentr" : "brightness"
+							"speccrest" : "xscale",
+							"speckurt" : "brightness",
+							"zcr" : "ylocation"
 						}
 ,
 						"transform" : 						{
-							"width" : 300,
-							"height" : 300,
-							"zoom" : 1.0
+							"width" : 600,
+							"height" : 600,
+							"zoom" : 1
 						}
 
 					}
@@ -2118,7 +2344,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 4,
 					"outlettype" : [ "dictionary", "", "", "" ],
-					"patching_rect" : [ 540.0, 212.0, 164.0, 22.0 ],
+					"patching_rect" : [ 550.0, 208.0, 164.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"embed" : 1,
 						"parameter_enable" : 0,
@@ -2137,7 +2363,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 170.0, 462.0, 24.0, 24.0 ]
+					"patching_rect" : [ 180.0, 477.0, 24.0, 24.0 ]
 				}
 
 			}
@@ -2148,7 +2374,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 716.0, 212.0, 89.0, 22.0 ],
+					"patching_rect" : [ 726.0, 208.0, 89.0, 22.0 ],
 					"text" : "dictionary putty"
 				}
 
@@ -2159,7 +2385,7 @@
 					"maxclass" : "dict.view",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 540.0, 307.0, 221.0, 315.0 ]
+					"patching_rect" : [ 550.0, 303.0, 207.0, 264.0 ]
 				}
 
 			}
@@ -2171,7 +2397,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
 					"p_hopsize" : 1024,
-					"patching_rect" : [ 170.0, 320.652261123267749, 352.0, 132.347738876732251 ]
+					"patching_rect" : [ 180.0, 299.65226100000001, 357.0, 162.999999999999943 ]
 				}
 
 			}
@@ -2182,7 +2408,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
-					"patching_rect" : [ 107.0, 572.5, 197.0, 22.0 ],
+					"patching_rect" : [ 117.0, 563.5, 197.0, 22.0 ],
 					"text" : "buffer~ morph1 Brahms_4.wav -1 1"
 				}
 
@@ -2195,7 +2421,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 28.0, 271.0, 24.0, 24.0 ]
+					"patching_rect" : [ 38.0, 267.0, 24.0, 24.0 ]
 				}
 
 			}
@@ -2206,7 +2432,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 14.0, 212.0, 69.0, 22.0 ],
+					"patching_rect" : [ 24.0, 208.0, 69.0, 22.0 ],
 					"text" : "set morph1"
 				}
 
@@ -2218,7 +2444,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 85.0, 212.0, 33.0, 22.0 ],
+					"patching_rect" : [ 95.0, 208.0, 33.0, 22.0 ],
 					"text" : "view"
 				}
 
@@ -2297,6 +2523,16 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-40", 0 ],
+					"order" : 1,
+					"source" : [ "obj-25", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-54", 1 ],
+					"hidden" : 1,
+					"order" : 0,
 					"source" : [ "obj-25", 1 ]
 				}
 
@@ -2340,8 +2576,34 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-54", 0 ],
+					"hidden" : 1,
+					"source" : [ "obj-34", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-25", 0 ],
 					"source" : [ "obj-35", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-37", 1 ],
+					"hidden" : 1,
+					"order" : 0,
+					"source" : [ "obj-38", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-37", 0 ],
+					"hidden" : 1,
+					"order" : 1,
+					"source" : [ "obj-38", 0 ]
 				}
 
 			}
@@ -2389,6 +2651,13 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-38", 0 ],
+					"source" : [ "obj-54", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-52", 0 ],
 					"source" : [ "obj-6", 1 ]
 				}
@@ -2409,13 +2678,21 @@
 
 			}
  ],
-		"dependency_cache" : [ 			{
-				"name" : "helpdetails.js",
-				"bootpath" : "C74:/help/resources",
-				"type" : "TEXT",
-				"implicit" : 1
+		"parameters" : 		{
+			"obj-38" : [ "out", "out", 0 ],
+			"parameterbanks" : 			{
+				"0" : 				{
+					"index" : 0,
+					"name" : "",
+					"parameters" : [ "-", "-", "-", "-", "-", "-", "-", "-" ]
+				}
+
 			}
-, 			{
+,
+			"inherited_shortname" : 1
+		}
+,
+		"dependency_cache" : [ 			{
 				"name" : "morphograph.mxo",
 				"type" : "iLaX"
 			}

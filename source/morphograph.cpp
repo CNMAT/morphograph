@@ -2,6 +2,11 @@
 
 #include "ext.h"                //core externals header
 #include "ext_obex.h"           //basic max object functionality
+
+//need to include???
+#include "ext_path.h"
+#include "ext_sysfile.h"
+
 #include "ext_dictobj.h"
 #include "ext_buffer.h"
 #include "z_dsp.h"
@@ -51,6 +56,12 @@ void morphograph_size(t_morphograph *x, long width, long height); //ui size
 void morphograph_load(t_morphograph *x, t_symbol *s);
 void morphograph_process(t_morphograph *x);
 
+//------------------TEST FILE WRITER-------------------------------
+//-----------------------------------------------------------------
+void morphograph_writefile(t_morphograph *x, char *filename, short path);
+void morphograph_dowrite(t_morphograph *x, t_symbol *s);
+void morphograph_write(t_morphograph *x, t_symbol *s);
+
 t_max_err morphograph_notify(t_morphograph *x, t_symbol *s, t_symbol *msg, void *sender, void *data); //buffer related
 
 //custom/private user methods- internal only
@@ -91,7 +102,7 @@ class ShapeWriter {
     Document *doc;
     Parameters *params;
     std::string shape;
-    float rotation, size, width, height, y, xdev, linewidth;
+    float rotation, size, width, height, y, xdev, linewidth, trilen, yoffset;
     unsigned idx, vecsize, bright;
     double rv;
     short drawstyle;
@@ -102,8 +113,8 @@ private:
     
 public:
     
-//    ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc, double scf, double scnrg, long vsize) {
-ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
+    ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
+    //fork out primitive code to be the default, then stroke/fill
         x = _x;
         doc = _doc;
         shape = _shape;
@@ -115,9 +126,9 @@ ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
         height = 1.0;
         y = 0.5;
         xdev = 0.;
-        bright = 128;
+        bright = 0;
         linewidth = 0.5;
-    
+        drawstyle = 0; //stroke
     }
     
     virtual ~ShapeWriter() {
@@ -127,10 +138,10 @@ ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
     
     void draw(){
         if(shape == std::string("circles")){
-            draw_circle(drawstyle);
+            draw_circle();
         }
         if(shape == std::string("rectangles")){
-            draw_rectangle(drawstyle);
+            draw_rectangle();
         }
         if(shape == std::string("ellipses")){
             draw_ellipse();
@@ -140,7 +151,7 @@ ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
         }
         if(shape == std::string("triangles")){
             //object_error((t_object *)x, "triangle is not implemented.");
-            draw_triangle(drawstyle);
+            draw_triangle();
         }
         
     }
@@ -172,10 +183,9 @@ ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
     void set_idx(unsigned _i){
         idx = _i;
     }
-    void set_brightness(unsigned _bright){
+    void set_brightness(char _bright){
         bright = _bright;
     }
-    
    
     void set_drawstyle(std::string _style){
         if(_style == std::string("stroke")){
@@ -191,34 +201,86 @@ ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
     
 private:
 
-    void draw_triangle(short style){
-        
-        
-        double tx = (double)idx / vecsize * params->width;
-        double ty = y * params->height;
-        
-        //Polygon pg = Polygon(Stroke(1, Color(0,0,0)));
-        Polygon pg = Polygon(Fill(Color(0,0,0)));
-        
-        pg << pPoint(tx, ty);
-        //pPoint p2 = pPoint((tx + 10), ty + 0);
-        pPoint p2 = pPoint((tx + 10) + (size * 20), ty + 0);
-        pg << p2;
-        //pPoint p3 = pPoint((tx + 5), (ty + 10));
-        pPoint p3 = pPoint((tx + 5) + (size * 10), (ty + 10) + (size * 20));
-        pg << p3;
-        
-        (*doc) << pg;
+    void draw_triangle(){
+        switch(drawstyle){
+            case 0: { //stroke
+                //initial pos
+                double tx = (double)idx / vecsize * params->width;
+                double ty = (y * params->height) - 10.;
+                Polygon pg = Polygon(Fill(), Stroke(linewidth, Color(0,0,0)));
+                pg << pPoint(tx, ty);
+                double p2x = (tx + (size * 20)) * width;
+                pPoint p2 = pPoint(p2x, ty + 0);
+                pg << p2;
+                double p2y = (ty + (size * 20)) * height;
+                pPoint p3 = pPoint(tx, p2y);
+                pg << p3;
+                
+                (*doc) << pg;
+            }
+                break;
+            case 1: { //fill
+                //initial pos
+                double tx = (double)idx / vecsize * params->width;
+                double ty = (y * params->height) - 10.;
+                Polygon pg = Polygon(Fill(Color(bright, bright, bright)));
+                pg << pPoint(tx, ty);
+                double p2x = (tx + (size * 20)) * width;
+                pPoint p2 = pPoint(p2x, ty + 0);
+                pg << p2;
+                double p2y = (ty + (size * 20)) * height;
+                pPoint p3 = pPoint(tx, p2y);
+                pg << p3;
+                
+                (*doc) << pg;
+            }
+                break;
+                
+            case 2: { //both
+                //initial pos
+                double tx = (double)idx / vecsize * params->width;
+                double ty = (y * params->height) - 10.;
+                Polygon pg = Polygon(Fill(Color(bright, bright, bright)), Stroke(linewidth, Color(0,0,0)));
+                pg << pPoint(tx, ty);
+                double p2x = (tx + (size * 20)) * width;
+                pPoint p2 = pPoint(p2x, ty + 0);
+                pg << p2;
+                double p2y = (ty + (size * 20)) * height;
+                pPoint p3 = pPoint(tx, p2y);
+                pg << p3;
+                
+                (*doc) << pg;
+            }
+                break;
+                
+            default: {
+                //initial pos
+                double tx = (double)idx / vecsize * params->width;
+                double ty = (y * params->height) - 10.;
+                Polygon pg = Polygon(Fill(Color(bright, bright, bright)));
+                pg << pPoint(tx, ty);
+                double p2x = (tx + (size * 20)) * width;
+                pPoint p2 = pPoint(p2x, ty + 0);
+                pg << p2;
+                double p2y = (ty + (size * 20)) * height;
+                pPoint p3 = pPoint(tx, p2y);
+                pg << p3;
+                
+                (*doc) << pg;
+            }
+                break;
+        }
+
     }
     
-    void draw_circle(short style){
-        switch(style){
+    void draw_circle(){
+        switch(drawstyle){
             case 0: //stroke
             (*doc) << Circle(
                 pPoint (((double)idx / vecsize) * params->width, y * params->height),
                 (params->width / SHAPE_DIVISOR) * size,
                 Fill(),
-                Stroke(1, Color (0, 0, 0))
+                Stroke(linewidth, Color (0, 0, 0))
             );
                 break;
             case 1: //fill
@@ -248,10 +310,11 @@ private:
         }
     }
 
-    void draw_rectangle(short style){
+    void draw_rectangle(){
         //Rectangle(pPoint, width, height);
-        switch(style){
+        switch(drawstyle){
             case 0: //stroke
+                
                 (*doc) << Rectangle(
                     pPoint(((double)idx / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
@@ -260,6 +323,7 @@ private:
                 );
                 break;
             case 1: //fill
+                object_post((t_object *)x, "fill rectangle called");
                 (*doc) << Rectangle(
                     pPoint(((double)idx / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
@@ -267,6 +331,7 @@ private:
                 );
                 break;
             case 2: //both
+                object_post((t_object *)x, "both rectangle called");
                 (*doc) << Rectangle(
                     pPoint(((double)idx / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
@@ -276,6 +341,7 @@ private:
                 break;
                 
             default:
+                object_post((t_object *)x, "default rectangle called");
                 (*doc) << Rectangle(
                     pPoint(((double)idx / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
@@ -392,7 +458,7 @@ public:
         fname = std::string(x->l_fnamesvg->s_name);
         fpath = std::string(x->l_filepath->s_name);
         
-        Dimensions dims (params.width + OFFSET, params.height + OFFSET);
+        Dimensions dims (params.width, params.height);
         doc = new Document (fpath + fname, Layout(dims, Layout::BottomLeft, params.zoom));
     }
     
@@ -470,33 +536,33 @@ public:
                         case FEATURE_HFC: {
                             curr_feature_datum = layers[i].desc.hfc[j];
                         } break;
-                        case FEATURE_INHARM: {
-                            curr_feature_datum = layers[i].desc.inharmonicity[j];
-                        } break;
+//                        case FEATURE_INHARM: {
+//                            curr_feature_datum = layers[i].desc.inharmonicity[j];
+//                        } break;
                         case FEATURE_SPECIRR: {
                             curr_feature_datum = layers[i].desc.specirr[j];
                         } break;
-                        case FEATURE_SPECCENTER: {
-                            curr_feature_datum = layers[i].desc.speccentr[j];
-                        } break;
-                        case FEATURE_SPECSPREAD: {
-                            curr_feature_datum = layers[i].desc.specspread[j];
-                        } break;
+//                        case FEATURE_SPECCENTER: {
+//                            curr_feature_datum = layers[i].desc.speccentr[j];
+//                        } break;
+//                        case FEATURE_SPECSPREAD: {
+//                            curr_feature_datum = layers[i].desc.specspread[j];
+//                        } break;
                         case FEATURE_SPECSKEW: {
                             curr_feature_datum = layers[i].desc.specskew[j];
                         } break;
                         case FEATURE_SPECKURT: {
                             curr_feature_datum = layers[i].desc.speckurt[j];
                         } break;
-                        case FEATURE_SPECFLUX: {
-                            curr_feature_datum = layers[i].desc.specflux[j];
-                        } break;
-                        case FEATURE_SPECDECR: {
-                            curr_feature_datum = layers[i].desc.specdecr[j];
-                        } break;
-                        case FEATURE_SPECSLOPE: {
-                            curr_feature_datum = layers[i].desc.specslope[j];
-                        } break;
+//                        case FEATURE_SPECFLUX: {
+//                            curr_feature_datum = layers[i].desc.specflux[j];
+//                        } break;
+//                        case FEATURE_SPECDECR: {
+//                            curr_feature_datum = layers[i].desc.specdecr[j];
+//                        } break;
+//                        case FEATURE_SPECSLOPE: {
+//                            curr_feature_datum = layers[i].desc.specslope[j];
+//                        } break;
                         case FEATURE_SPECFLAT: {
                             curr_feature_datum = layers[i].desc.specflat[j];
                         } break;
@@ -511,10 +577,10 @@ public:
                     }
           
                     switch(get_action_id(x, k)){
-                        case PARAM_ROTATION: {
-                            //unimplemented
-                            object_error((t_object *)x, "render: rotation is unimplemented.");
-                        } break;
+//                        case PARAM_ROTATION: {
+//                            //unimplemented
+//                            object_error((t_object *)x, "render: rotation is unimplemented.");
+//                        } break;
                         case PARAM_XSCALE: {
                             //object_post((t_object *)x, "detected xscale");
                             swrite.set_width(curr_feature_datum);
@@ -532,10 +598,10 @@ public:
                             
                             swrite.set_y(curr_feature_datum);
                         } break;
-                        case PARAM_XDEV: {
-                            //unimplemented
-                            object_error((t_object *)x, "x deviation is unimplemented.");
-                        } break;
+//                        case PARAM_XDEV: {
+//                            //unimplemented
+//                            object_error((t_object *)x, "x deviation is unimplemented.");
+//                        } break;
                         case PARAM_BRIGHTNESS: {
                             char b = curr_feature_datum * 255;
                             swrite.set_brightness(b);
@@ -703,8 +769,9 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
     }
         
     int ptr = 0;
+    bool feature_valid = true;
     
-    while (ptr < nsamps) {
+    while (ptr < nsamps && feature_valid) {
         if (p.fft_size + ptr > nsamps) break; // discard incomplete frame
 
         //run fft()
@@ -733,6 +800,8 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
             sum += a * a;
         }
         double e = std::sqrt (sum / p.fft_size); //we push this later
+        d.energy.push_back(e * 10.);
+        //d.energy.push_back(e);
         
         //centroid
         double sc = speccentr(&amps[0], &freqs[0], p.fft_size / 2);
@@ -750,7 +819,7 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
             switch(get_feature_id(x, i)) {
                 case FEATURE_ENERGY: {
                     object_post((t_object *)x, "spec energy: %f", e * 10.);
-                    d.energy.push_back(e * 10.);
+                    //d.energy.push_back(e * 10.);
                 } break;
                 case FEATURE_ZCR: {
                     //double z = zcr<double>(&vsamples[ptr], p.fft_size / 2);
@@ -763,65 +832,65 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
                     object_post((t_object *)x, "hfc: %f", h);
                     d.hfc.push_back(h);
                 } break;
-                case FEATURE_INHARM: {
-                    //don't understand how to implement this
-                    //double ih = inharmonicity(&amps[0], &freqs[0], p.fft_size, <#T f0#>, <#T R#>, <#T &sumAmpl#>)
-                    object_error((t_object *)x, "inharmonicity is currently unimplemented.");
-                    return;
-                } break;
+//                case FEATURE_INHARM: {
+//                    //don't understand how to implement this
+//                    //double ih = inharmonicity(&amps[0], &freqs[0], p.fft_size, <#T f0#>, <#T R#>, <#T &sumAmpl#>)
+//                    object_error((t_object *)x, "inharmonicity is currently unimplemented.");
+//                    feature_valid = false;
+//                } break;
                 case FEATURE_SPECIRR: {
                     double si = specirr(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec irr: %f", si);
-                    d.specirr.push_back(si);
+                    object_post((t_object *)x, "spec irr: %f", si * 0.001);
+                    d.specirr.push_back(si * 0.001);
                 } break;
-                case FEATURE_SPECCENTER: {
-                    //skip bc we already compute - should take this out
-                    object_post((t_object *)x, "spec centroid: %f", sc);
-                } break;
-                case FEATURE_SPECSPREAD:{
-                    //skip bc we already compute - should take this out
-                    object_post((t_object *)x, "spec spread: %f", sspr);
-                } break;
+//                case FEATURE_SPECCENTER: {
+//                    //skip bc we already compute - should take this out
+//                    object_post((t_object *)x, "spec centroid: %f", sc);
+//                } break;
+//                case FEATURE_SPECSPREAD:{
+//                    //skip bc we already compute - should take this out
+//                    object_post((t_object *)x, "spec spread: %f", sspr);
+//                } break;
                 case FEATURE_SPECSKEW: {
                     double ssk = specskew(&amps[0], &freqs[0], p.fft_size / 2, sc, sspr);
-                    object_post((t_object *)x, "spec skew: %f", ssk);
-                    d.specskew.push_back(ssk);
+                    object_post((t_object *)x, "spec skew: %f", ssk * 0.1);
+                    d.specskew.push_back(ssk * 0.1);
                 } break;
                 case FEATURE_SPECKURT: {
                     double k = speckurt(&amps[0], &freqs[0], p.fft_size / 2, sc, sspr);
                     object_post((t_object *)x, "spec kurt: %f", k);
                     d.speckurt.push_back(k * 0.01);
                 } break;
-                case FEATURE_SPECFLUX: {
-                    //how to calculate the old amplitudes... ???
-                    //double f = specflux(&amps[0], oa, p.fft_size);
-                    object_error((t_object *)x, "spectral flux is currently unimplemented.");
-                    return;
-                } break;
-                case FEATURE_SPECDECR: {
-                    double sd = specdecr(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec decrease: %f", sd);
-                    d.specdecr.push_back(sd);
-                } break;
-                case FEATURE_SPECSLOPE: {
-                    double ssl = specslope(&amps[0], &freqs[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec slope: %f", ssl);
-                    d.specslope.push_back(ssl);
-                } break;
+//                case FEATURE_SPECFLUX: {
+//                    //how to calculate the old amplitudes... ???
+//                    //double f = specflux(&amps[0], oa, p.fft_size);
+//                    object_error((t_object *)x, "spectral flux is currently unimplemented.");
+//                    feature_valid = false;
+//                } break;
+//                case FEATURE_SPECDECR: {
+//                    double sd = specdecr(&amps[0], p.fft_size / 2);
+//                    object_post((t_object *)x, "spec decrease: %f", sd);
+//                    d.specdecr.push_back(sd);
+//                } break;
+//                case FEATURE_SPECSLOPE: {
+//                    double ssl = specslope(&amps[0], &freqs[0], p.fft_size / 2);
+//                    object_post((t_object *)x, "spec slope: %f", ssl);
+//                    d.specslope.push_back(ssl);
+//                } break;
                 case FEATURE_SPECFLAT: {
                     double sf = specflat(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec flatness: %f", sf);
-                    d.specflat.push_back(sf);
+                    object_post((t_object *)x, "spec flatness: %f", sf * 10000.);
+                    d.specflat.push_back(sf * 10000.);
                 } break;
                 case FEATURE_SPECCREST: {
                     double scr = speccrest(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec crest: %f", scr);
-                    d.speccrest.push_back(scr);
+                    object_post((t_object *)x, "spec crest: %f", scr * 10);
+                    d.speccrest.push_back(scr * 10);
                 } break;
                     
                 default: {
                     object_error((t_object *)x, "analysis: cannot find valid feature id.");
-                    return;
+                    feature_valid = false;
                 }
             }
         }
@@ -1036,27 +1105,31 @@ static void populate_features(t_morphograph *x){
     x->l_features[0] = (char *)"energy";
     x->l_features[1] = (char *)"zcr";
     x->l_features[2] = (char *)"hfc";
-    x->l_features[3] = (char *)"inharmonicity";
-    x->l_features[4] = (char *)"specirr";
-    x->l_features[5] = (char *)"speccentr";
-    x->l_features[6] = (char *)"specspread";
+    x->l_features[3] = (char *)"specirr";
+    x->l_features[4] = (char *)"speckurt";
+    x->l_features[5] = (char *)"speccrest";
+    x->l_features[6] = (char *)"specflat";
     x->l_features[7] = (char *)"specskew";
-    x->l_features[8] = (char *)"speckurt";
-    x->l_features[9] = (char *)"specflux";
-    x->l_features[10] = (char *)"specdecr";
-    x->l_features[11] = (char *)"specslope";
-    x->l_features[12] = (char *)"specflat";
-    x->l_features[13] = (char *)"speccrest";
+
+//    x->l_features[8] = (char *)"speccentr";
+//    x->l_features[9] = (char *)"specspread";
+//    x->l_features[10] = (char *)"specflux";
+//    x->l_features[11] = (char *)"specdecr";
+//    x->l_features[12] = (char *)"specslope";
+//    x->l_features[13] = (char *)"inharmonicity";
 }
 
 static void populate_actions(t_morphograph *x){
-    x->l_actions[0] = (char *)"rotation";
-    x->l_actions[1] = (char *)"xscale";
-    x->l_actions[2] = (char *)"yscale";
-    x->l_actions[3] = (char *)"size";
-    x->l_actions[4] = (char *)"ylocation";
-    x->l_actions[5] = (char *)"xdeviation";
-    x->l_actions[6] = (char *)"brightness";
+    
+    x->l_actions[0] = (char *)"xscale";
+    x->l_actions[1] = (char *)"yscale";
+    x->l_actions[2] = (char *)"size";
+    x->l_actions[3] = (char *)"ylocation";
+    x->l_actions[4] = (char *)"brightness";
+    
+//    x->l_actions[5] = (char *)"rotation";
+//    x->l_actions[6] = (char *)"xdeviation";
+    
 }
 
 static void populate_shapes(t_morphograph *x){
@@ -1170,7 +1243,7 @@ void morphograph_set(t_morphograph *x, t_symbol *s) {
 
 void morphograph_set_path(t_morphograph *x, t_symbol *s) {
     x->l_filepath = s;
-    object_post((t_object *)x, "the path: %s", x->l_filepath->s_name);
+    object_post((t_object *)x, "svg write path: %s", x->l_filepath->s_name);
 }
 
 //this should be handled by the process_descmap() function
@@ -1278,6 +1351,7 @@ void morphograph_load(t_morphograph *x, t_symbol *s){
     } else {
         //path is input by user (via open dialog object for ex)
         strcpy(filename,s->s_name);
+      //  locatefile_extended(<#char *name#>, <#short *outvol#>, <#t_fourcc *outtype#>, <#const t_fourcc *filetypelist#>, <#short numtypes#>)
         if (!locatefile_extended(filename, &pathid, &outtype, type, ntype)) {
             //continue
         } else {
@@ -1337,20 +1411,21 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
         jsvg_render(x->l_svg, g);
         
     }else{
-        t_jrgba color, color_r;
-        double offset = 5.;
-        double offset2 = 10.;
+        t_jrgba color_bg, color_rr;
+        double offset = 2.;
+        double offset2 = 7.;
 
         //alpha is transparent if zero
-        color.red = 0.; color.green = 1.; color.blue = 0.; color.alpha = 1.;
-        color_r.red = 0.2; color_r.green = 0.5; color_r.blue = 0.; color_r.alpha = 1.;
+        color_bg.red = 0.064286; color_bg.green = 0.315738; color_bg.blue = 0.364286; color_bg.alpha = 1.;
+        color_rr.red = 0.217857; color_rr.green = 0.492961; color_rr.blue = 0.496429; color_rr.alpha = 1.;
 
-
-        jgraphics_set_source_jrgba(g, &color);
-        jgraphics_rectangle(g, offset, offset, rect.width - offset*2, rect.height - offset*2);
+        
+        
+        jgraphics_set_source_jrgba(g, &color_bg);
+        jgraphics_rectangle(g, 0, 0, rect.width, rect.height);
         jgraphics_fill(g);
 
-        jgraphics_set_source_jrgba(g, &color_r);
+        jgraphics_set_source_jrgba(g, &color_rr);
         jgraphics_rectangle_rounded(g, offset2, offset2, rect.width - offset2*2, rect.height - offset2*2, 30, 30);
         jgraphics_fill(g);
     }
@@ -1358,8 +1433,55 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
 
 }
 
+
+
 //-------------------------------------------------------------------------------------------------
 //c functions: std max api
+//-------------------------------------------------------------------------------------------------
+
+//test filewriter ---------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+void morphograph_write(t_morphograph *x, t_symbol *s){
+    defer(x, (method)morphograph_dowrite, s, 0, NULL);
+}
+
+void morphograph_dowrite(t_morphograph *x, t_symbol *s){
+//    long filetype = 'TEXT', outtype;
+    char filename[512];
+    //short path;
+
+    //jml
+    short pathid;
+    t_fourcc type = NULL;
+    t_fourcc otype;
+    
+    //prev
+    //saveasdialog_extended(filename, &path, &outtype, &filetype, 1)
+ 
+    if (s == gensym("")) {      // if no argument supplied, ask for file
+        if (saveasdialog_extended(filename, &pathid, &otype, &type, 1))     // non-zero: user cancelled
+            return;
+    } else {
+        strcpy(filename, s->s_name);
+        pathid = path_getdefault();
+    }
+    morphograph_writefile(x, filename, pathid);
+}
+
+void morphograph_writefile(t_morphograph *x, char *filename, short path){
+
+    char *buf = (char *)"write me into a file";
+    
+    long err;
+    t_filehandle fh;
+ 
+    err = path_createsysfile(filename, path, 'TEXT', &fh);
+    if (err)
+        return;
+    err = sysfile_writetextfile(fh, &buf, TEXT_LB_NATIVE);
+    sysfile_close(fh);
+
+}
 //-------------------------------------------------------------------------------------------------
 
 void morphograph_anything(t_morphograph *x, const t_symbol * const s, const long ac, const t_atom *av){
@@ -1490,7 +1612,9 @@ void ext_main(void *r) {
     class_addmethod(c, (method)morphograph_anything, "anything", A_GIMME, 0);
     class_addmethod(c, (method)morphograph_bang, "bang", 0);
 	class_addmethod(c, (method)morphograph_assist,	"assist", A_CANT, 0);
-
+    //test text stuff
+    class_addmethod(c, (method)morphograph_write, "write", A_DEFSYM, 0);
+    
     //register custom user methods
     class_addmethod(c, (method)morphograph_set, "set", A_SYM, 0);
     class_addmethod(c, (method)morphograph_size, "size", A_LONG, A_LONG, 0);
