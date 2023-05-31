@@ -1,6 +1,4 @@
-//
-//  morphograph.h
-//  max-sdk
+//  mgraph.h
 //
 //  Created by Jeff Lubow on 1/13/23.
 //
@@ -75,4 +73,4 @@ typedef struct _morphograph {
     //t_hashtab *hash_table;
 } t_morphograph;
 
-#endif /* morphograph_h */
+#endif /* mgraph_h */

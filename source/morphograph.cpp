@@ -7,6 +7,8 @@
 #include "ext_path.h"
 #include "ext_sysfile.h"
 
+#include "ext_appendtohandle.h" //non-exported code from c74 - filewrite
+
 #include "ext_dictobj.h"
 #include "ext_buffer.h"
 #include "z_dsp.h"
@@ -1351,7 +1353,6 @@ void morphograph_load(t_morphograph *x, t_symbol *s){
     } else {
         //path is input by user (via open dialog object for ex)
         strcpy(filename,s->s_name);
-      //  locatefile_extended(<#char *name#>, <#short *outvol#>, <#t_fourcc *outtype#>, <#const t_fourcc *filetypelist#>, <#short numtypes#>)
         if (!locatefile_extended(filename, &pathid, &outtype, type, ntype)) {
             //continue
         } else {
@@ -1439,8 +1440,8 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
 //c functions: std max api
 //-------------------------------------------------------------------------------------------------
 
-//test filewriter ---------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------------
+//test filewriter --------------------------------------------
+//------------------------------------------------------------
 void morphograph_write(t_morphograph *x, t_symbol *s){
     defer(x, (method)morphograph_dowrite, s, 0, NULL);
 }
@@ -1470,19 +1471,29 @@ void morphograph_dowrite(t_morphograph *x, t_symbol *s){
 
 void morphograph_writefile(t_morphograph *x, char *filename, short path){
 
-    char *buf = (char *)"write me into a file";
+    char *buf1 = (char *)"write me into a file\n";
+    char *buf2 = (char *)"another line\n";
+    char *buf3 = (char *)"line three here we are";
     
     long err;
     t_filehandle fh;
- 
+    t_handle th = sysmem_newhandle(0);
+
+    //append to text buffer
+    my_sysmem_appendtextptrtohand(buf1, th);
+    my_sysmem_appendtextptrtohand(buf2, th);
+    my_sysmem_appendtextptrtohand(buf3, th);
+
+    //create file
     err = path_createsysfile(filename, path, 'TEXT', &fh);
     if (err)
         return;
-    err = sysfile_writetextfile(fh, &buf, TEXT_LB_NATIVE);
+    //write file
+    err = sysfile_writetextfile(fh, th, TEXT_LB_NATIVE);
     sysfile_close(fh);
 
 }
-//-------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------
 
 void morphograph_anything(t_morphograph *x, const t_symbol * const s, const long ac, const t_atom *av){
     
