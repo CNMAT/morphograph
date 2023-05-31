@@ -19,6 +19,7 @@
 		A4AC6BF7299D9BB90056292B /* MaxAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAPI.framework; path = "max-includes/MaxAPI.framework"; sourceTree = "<group>"; };
 		A4AC6BF8299D9F990056292B /* mgraph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mgraph.h; sourceTree = "<group>"; };
 		A4AC6BF9299D9FB60056292B /* cella */ = {isa = PBXFileReference; lastKnownFileType = folder; path = cella; sourceTree = "<group>"; };
+		A4E349D62A27A8840098AB9B /* ext_appendtohandle.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = ext_appendtohandle.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +58,7 @@
 				A4AC6BF1299D9B3D0056292B /* mgraph_cpp.h */,
 				A4AC6BF8299D9F990056292B /* mgraph.h */,
 				A4AC6BF3299D9B480056292B /* morphograph.cpp */,
+				A4E349D62A27A8840098AB9B /* ext_appendtohandle.h */,
 				A4AC6BF5299D9B560056292B /* CMakeLists.txt */,
 			);
 			name = morphograph;
