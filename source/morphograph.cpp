@@ -108,12 +108,13 @@ class ShapeWriter {
     t_morphograph *obj; //obj instead of x here
     Document *doc;
     Parameters *params;
-    float rotation, size, width, height, y, xdev, linewidth, trilen, yoffset;
+    float size;
+    float width, height, y, xdev, linewidth, trilen, yoffset;
     //unsigned idx, vecsize, bright;
-    unsigned x, vecsize, bright; //make x a double?
+    unsigned x, vecsize, bright, rotation; //make x a double???
     double rv;
     short drawstyle;
-    std::string linestr, bs, shape;
+    std::string linestr, bs, shape, xs, ys, ws, hs;
     
     
 private:
@@ -130,7 +131,7 @@ public:
     
         //defaults
         size = 1.0;
-        rotation = 0;
+        rotation = 0.;
         width = 1.0;
         height = 1.0;
         y = 0.5;
@@ -149,12 +150,21 @@ public:
     
     void draw(){
         //MAKE DRAW HAVE A GROUP DEFINITION FOR STROKE / STROKE-WIDTH
-        // <g> <circle... </g> etc
+        //<g><circle/><circle/></g> etc
         
         //default strings for filewriter
+        
+        float tx = (x / float(vecsize)) * float(params->width);
+        float default_size = 8.;
+        
+        xs = std::to_string(tx);
+        ys = std::to_string(y * params->height);
+        ws = std::to_string(width * default_size);
+        hs = std::to_string(height * default_size);
         bs = std::to_string(bright);
-
-        append_svg_txt(obj, "<"); //open
+        
+        // begin shape ------------------------------------------------
+        linestr = "<"; //open
         
         if(shape == std::string("circles")){
             draw_circle();
@@ -176,22 +186,35 @@ public:
         switch(drawstyle){
             case 0: //stroke; consider stroke width
                 linestr.append("fill=\"transparent\" ");
-               	linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\"");
+               	linestr.append("stroke=\"rgb(0,0,0)\"  stroke-width=\"0.2\" ");
                 break;
             case 1: //fill
                 linestr.append("fill=\"rgb(");
                 linestr.append(bs + "," + bs + "," + bs);
-                linestr.append(")\"");
+                linestr.append(")\" ");
                 break;
             case 2: //both
-                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" ");
+                linestr.append("stroke=\"rgb(0,0,0)\"  stroke-width=\"0.2\" ");
                 linestr.append("fill=\"rgb(");
                 linestr.append(bs + "," + bs + "," + bs);
-                linestr.append(")\"");
+                linestr.append(")\" ");
                 break;
         }
         
+        //transform characteristics
+        std::string rstr = std::to_string(rotation);
+        std::string sc = std::to_string(size * 8.);
+        
+        linestr.append("transform=\""); //--------------------------
+        linestr.append("translate(" + xs + "," + ys + ") ");
+        linestr.append("rotate(" + rstr + ", 50, 50) "); //2nd and 3rd args are in percentage
+        linestr.append("scale(" + sc + ")");
+        linestr.append("\""); //-------------------------------------
+        
+        // append linestring text to doc
         append_svg_txt(obj, linestr);
+        
+        // end shape ------------------------------------------------
         append_svg_txt(obj, " />\n"); //close
     }
     
@@ -199,7 +222,7 @@ public:
         params = _params;
     }
     void set_rotation(float _rot){
-        rotation = _rot;
+        rotation = uint(_rot) % 360;
     }
     void set_vecsize(long _vsize){
         vecsize = _vsize;
@@ -245,9 +268,7 @@ public:
 private:
 
     void draw_triangle(){
-        
-        
-        
+    
         switch(drawstyle){
             case 0: { //stroke
                 //initial pos
@@ -320,102 +341,24 @@ private:
     }
     
     void draw_circle(){
-        //new file writer
-        std::string xc = std::to_string((x / vecsize) * params->width);
-        std::string yc = std::to_string(y * params->height);
-        std::string rc = std::to_string(size * 8);
-        
         //note that circles are drawn via their center point by default
-        linestr = "circle cx=\"";
-        linestr.append(xc);
-        linestr.append("\" cy=\"");
-        linestr.append(yc);
-        linestr.append("\" r=\"");
-        linestr.append(rc);
-        linestr.append("\" ");
+        //linestr.append("circle cx=\"" + xs + "\" cy=\"" + ys + "\" r=\"0.5\" ");
+        linestr.append("circle r=\"0.5\"");
     }
 
     void draw_rectangle(){
         //Rectangle(pPoint, width, height);
-        
-        switch(drawstyle){
-            case 0: //stroke
-                
-                (*doc) << Rectangle(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(),
-                    Stroke(linewidth, Color(0, 0, 0))
-                );
-                break;
-            case 1: //fill
-                object_post((t_object *)obj, "fill rectangle called");
-                (*doc) << Rectangle(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright))
-                );
-                break;
-            case 2: //both
-                object_post((t_object *)obj, "both rectangle called");
-                (*doc) << Rectangle(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright)),
-                    Stroke(linewidth, Color(0, 0, 0))
-                );
-                break;
-                
-            default:
-                object_post((t_object *)obj, "default rectangle called");
-                (*doc) << Rectangle(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright))
-                );
-                break;
-        }
+        linestr.append("rect width=\"" + ws + "\" height=\"" + hs + "\" " );
+      //  linestr.append("rect x=\"" + xs + "\" y=\"" + ys + "\" width=\"" + ws + "\" height=\"" + hs + "\" ");
     }
     
     void draw_ellipse(){
-        //Elipse(pPoint, width, height);
-        switch(drawstyle){
-            case 0://stroke
-                (*doc) << Elipse(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(),
-                    Stroke(linewidth, Color(0, 0, 0))
-                );
-                break;
-            case 1://fill
-                (*doc) << Elipse(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright))
-                );
-                break;
-            case 2://both
-                (*doc) << Elipse(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright)),
-                    Stroke(linewidth, Color(0, 0, 0))
-                );
-                break;
-            default:
-                (*doc) << Elipse(
-                    pPoint((x / vecsize) * params->width, y * params->height),
-                    ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright))
-                );
-
-                break;
-        }
+        linestr.append("ellipse rx=\"" + ws + "\" ry=\"" + hs + "\" ");
+        //linestr.append("ellipse ");
     }
     
     void draw_letter(){
-        int l = rand () % 26;
+        int l = rand() % 26;
         char ls = 'a';
         std::stringstream lss;
         lss << (char)(ls + l);
@@ -446,7 +389,7 @@ private:
                 break;
             default:
                 (*doc) << Text(
-                    pPoint(x    x / vecsize * params->width, y * params->height),
+                    pPoint(x / vecsize * params->width, y * params->height),
                     lss.str(), Color(bright, bright, bright),
                     Font((size * params->height) / 16, "Verdana")
                 );
@@ -603,10 +546,10 @@ public:
                     }
           
                     switch(get_action_id(x, k)){
-//                        case PARAM_ROTATION: {
-//                            //unimplemented
-//                            object_error((t_object *)x, "render: rotation is unimplemented.");
-//                        } break;
+                        case PARAM_ROTATION: {
+                            //unimplemented
+                            swrite.set_rotation(curr_feature_datum * 100.0);
+                        } break;
                         case PARAM_XSCALE: {
                             //object_post((t_object *)x, "detected xscale");
                             swrite.set_width(curr_feature_datum);
@@ -645,7 +588,7 @@ public:
                 swrite.set_drawstyle(x->l_style->s_name);
                 swrite.set_vecsize(vsize);
                 //swrite.set_idx(j); //i is layer, j is analysis frame
-                swrite.set_x(double(j));
+                swrite.set_x(float(j));
                 swrite.set_params(&params);
                 swrite.draw();
         
@@ -1158,8 +1101,7 @@ static void populate_actions(t_morphograph *x){
     x->l_actions[2] = (char *)"size";
     x->l_actions[3] = (char *)"ylocation";
     x->l_actions[4] = (char *)"brightness";
-    
-//    x->l_actions[5] = (char *)"rotation";
+    x->l_actions[5] = (char *)"rotation";
 //    x->l_actions[6] = (char *)"xdeviation";
     
 }

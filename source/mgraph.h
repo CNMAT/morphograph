@@ -32,14 +32,14 @@
 //#define FEATURE_INHARM 13
 
 //#define NUM_ACTIONS 7
-#define NUM_ACTIONS 5
+#define NUM_ACTIONS 6
 
 #define PARAM_XSCALE 0
 #define PARAM_YSCALE 1
 #define PARAM_SIZE 2
 #define PARAM_YLOC 3
 #define PARAM_BRIGHTNESS 4
-//#define PARAM_ROTATION 5
+#define PARAM_ROTATION 5
 //#define PARAM_XDEV 6
 
 #define NUM_SHAPES 6
