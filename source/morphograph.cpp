@@ -80,6 +80,11 @@ static void process_transform(t_morphograph *x, t_dictionary *d);
 static int get_feature_id(t_morphograph *x, short curr);
 static int get_action_id(t_morphograph *x, short curr);
 
+static void append_svg_open(t_morphograph *x);
+//static void append_svg_txt(t_morphograph *x, char *line);
+static void append_svg_txt(t_morphograph *x, std::string linestr);
+static void append_svg_close(t_morphograph *x);
+
 static t_class *morphograph_class;
 static t_symbol *ps_dictionary;
 
@@ -100,14 +105,16 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b);
 static void mgraph_cpp(t_morphograph *x);
 
 class ShapeWriter {
-    t_morphograph *x;
+    t_morphograph *obj; //obj instead of x here
     Document *doc;
     Parameters *params;
-    std::string shape;
     float rotation, size, width, height, y, xdev, linewidth, trilen, yoffset;
-    unsigned idx, vecsize, bright;
+    //unsigned idx, vecsize, bright;
+    unsigned x, vecsize, bright; //make x a double?
     double rv;
     short drawstyle;
+    std::string linestr, bs, shape;
+    
     
 private:
     ShapeWriter& operator = (ShapeWriter&);
@@ -115,9 +122,9 @@ private:
     
 public:
     
-    ShapeWriter(t_morphograph *_x, std::string &_shape, Document *_doc) {
+    ShapeWriter(t_morphograph *_obj, std::string &_shape, Document *_doc) {
     //fork out primitive code to be the default, then stroke/fill
-        x = _x;
+        obj = _obj;
         doc = _doc;
         shape = _shape;
     
@@ -130,15 +137,25 @@ public:
         xdev = 0.;
         bright = 0;
         linewidth = 0.5;
-        drawstyle = 0; //stroke
+        drawstyle = 0; //0=stroke 1=fill 2=both
+        
     }
     
     virtual ~ShapeWriter() {
+	//linestr.delete(); //not sure if there is a better way...
         //clean up???
         //could be a memory leak here
     }
     
     void draw(){
+        //MAKE DRAW HAVE A GROUP DEFINITION FOR STROKE / STROKE-WIDTH
+        // <g> <circle... </g> etc
+        
+        //default strings for filewriter
+        bs = std::to_string(bright);
+
+        append_svg_txt(obj, "<"); //open
+        
         if(shape == std::string("circles")){
             draw_circle();
         }
@@ -156,6 +173,26 @@ public:
             draw_triangle();
         }
         
+        switch(drawstyle){
+            case 0: //stroke; consider stroke width
+                linestr.append("fill=\"transparent\" ");
+               	linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\"");
+                break;
+            case 1: //fill
+                linestr.append("fill=\"rgb(");
+                linestr.append(bs + "," + bs + "," + bs);
+                linestr.append(")\"");
+                break;
+            case 2: //both
+                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" ");
+                linestr.append("fill=\"rgb(");
+                linestr.append(bs + "," + bs + "," + bs);
+                linestr.append(")\"");
+                break;
+        }
+        
+        append_svg_txt(obj, linestr);
+        append_svg_txt(obj, " />\n"); //close
     }
     
     void set_params(Parameters *_params){
@@ -176,15 +213,19 @@ public:
     void set_size(float _size){
         size = _size;
     }
+    void set_x(float _x){
+        x = _x;
+    }
     void set_y(float _y){
         y = _y;
     }
     void set_xdev(float _xdev){
         xdev = _xdev;
     }
+    /*
     void set_idx(unsigned _i){
         idx = _i;
-    }
+    }*/
     void set_brightness(char _bright){
         bright = _bright;
     }
@@ -204,10 +245,13 @@ public:
 private:
 
     void draw_triangle(){
+        
+        
+        
         switch(drawstyle){
             case 0: { //stroke
                 //initial pos
-                double tx = (double)idx / vecsize * params->width;
+                double tx = x / vecsize * params->width;
                 double ty = (y * params->height) - 10.;
                 Polygon pg = Polygon(Fill(), Stroke(linewidth, Color(0,0,0)));
                 pg << pPoint(tx, ty);
@@ -223,7 +267,7 @@ private:
                 break;
             case 1: { //fill
                 //initial pos
-                double tx = (double)idx / vecsize * params->width;
+                double tx = x / vecsize * params->width;
                 double ty = (y * params->height) - 10.;
                 Polygon pg = Polygon(Fill(Color(bright, bright, bright)));
                 pg << pPoint(tx, ty);
@@ -240,7 +284,7 @@ private:
                 
             case 2: { //both
                 //initial pos
-                double tx = (double)idx / vecsize * params->width;
+                double tx = x / vecsize * params->width;
                 double ty = (y * params->height) - 10.;
                 Polygon pg = Polygon(Fill(Color(bright, bright, bright)), Stroke(linewidth, Color(0,0,0)));
                 pg << pPoint(tx, ty);
@@ -257,7 +301,7 @@ private:
                 
             default: {
                 //initial pos
-                double tx = (double)idx / vecsize * params->width;
+                double tx = x / vecsize * params->width;
                 double ty = (y * params->height) - 10.;
                 Polygon pg = Polygon(Fill(Color(bright, bright, bright)));
                 pg << pPoint(tx, ty);
@@ -276,66 +320,46 @@ private:
     }
     
     void draw_circle(){
-        switch(drawstyle){
-            case 0: //stroke
-            (*doc) << Circle(
-                pPoint (((double)idx / vecsize) * params->width, y * params->height),
-                (params->width / SHAPE_DIVISOR) * size,
-                Fill(),
-                Stroke(linewidth, Color (0, 0, 0))
-            );
-                break;
-            case 1: //fill
-                (*doc) << Circle(
-                    pPoint (((double)idx / vecsize) * params->width, y * params->height),
-                    (params->width / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright))
-                );
-
-                break;
-            case 2: //both
-                (*doc) << Circle(
-                    pPoint (((double)idx / vecsize) * params->width, y * params->height),
-                    (params->width / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright)),
-                    Stroke (linewidth, Color (0, 0, 0))
-                );
-
-                break;
-            default: //not given or not correct format
-                (*doc) << Circle(
-                    pPoint (((double)idx / vecsize) * params->width, y * params->height),
-                    (params->width / SHAPE_DIVISOR) * size,
-                    Fill(Color(bright, bright, bright))
-                );
-                break;
-        }
+        //new file writer
+        std::string xc = std::to_string((x / vecsize) * params->width);
+        std::string yc = std::to_string(y * params->height);
+        std::string rc = std::to_string(size * 8);
+        
+        //note that circles are drawn via their center point by default
+        linestr = "circle cx=\"";
+        linestr.append(xc);
+        linestr.append("\" cy=\"");
+        linestr.append(yc);
+        linestr.append("\" r=\"");
+        linestr.append(rc);
+        linestr.append("\" ");
     }
 
     void draw_rectangle(){
         //Rectangle(pPoint, width, height);
+        
         switch(drawstyle){
             case 0: //stroke
                 
                 (*doc) << Rectangle(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(),
                     Stroke(linewidth, Color(0, 0, 0))
                 );
                 break;
             case 1: //fill
-                object_post((t_object *)x, "fill rectangle called");
+                object_post((t_object *)obj, "fill rectangle called");
                 (*doc) << Rectangle(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(Color(bright, bright, bright))
                 );
                 break;
             case 2: //both
-                object_post((t_object *)x, "both rectangle called");
+                object_post((t_object *)obj, "both rectangle called");
                 (*doc) << Rectangle(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(Color(bright, bright, bright)),
                     Stroke(linewidth, Color(0, 0, 0))
@@ -343,9 +367,9 @@ private:
                 break;
                 
             default:
-                object_post((t_object *)x, "default rectangle called");
+                object_post((t_object *)obj, "default rectangle called");
                 (*doc) << Rectangle(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(Color(bright, bright, bright))
                 );
@@ -358,7 +382,7 @@ private:
         switch(drawstyle){
             case 0://stroke
                 (*doc) << Elipse(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(),
                     Stroke(linewidth, Color(0, 0, 0))
@@ -366,14 +390,14 @@ private:
                 break;
             case 1://fill
                 (*doc) << Elipse(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(Color(bright, bright, bright))
                 );
                 break;
             case 2://both
                 (*doc) << Elipse(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(Color(bright, bright, bright)),
                     Stroke(linewidth, Color(0, 0, 0))
@@ -381,7 +405,7 @@ private:
                 break;
             default:
                 (*doc) << Elipse(
-                    pPoint(((double)idx / vecsize) * params->width, y * params->height),
+                    pPoint((x / vecsize) * params->width, y * params->height),
                     ((width * params->width) / SHAPE_DIVISOR) * size, ((height * params->height) / SHAPE_DIVISOR) * size,
                     Fill(Color(bright, bright, bright))
                 );
@@ -399,7 +423,7 @@ private:
         switch(drawstyle){
             case 0://stroke
                 (*doc) << Text(
-                    pPoint((double)idx / vecsize * params->width, y * params->height),
+                    pPoint(x / vecsize * params->width, y * params->height),
                     lss.str(), Fill(),
                     Font((size * params->height) / 16, "Verdana"),
                     Stroke(linewidth, Color(0, 0, 0))
@@ -407,14 +431,14 @@ private:
                 break;
             case 1://fill
                 (*doc) << Text(
-                    pPoint((double)idx / vecsize * params->width, y * params->height),
+                    pPoint(x / vecsize * params->width, y * params->height),
                     lss.str(), Color(bright, bright, bright),
                     Font((size * params->height) / 16, "Verdana")
                 );
                 break;
             case 2://both
                 (*doc) << Text(
-                    pPoint((double)idx / vecsize * params->width, y * params->height),
+                    pPoint(x / vecsize * params->width, y * params->height),
                     lss.str(), Color(bright, bright, bright),
                     Font((size * params->height) / 16, "Verdana"),
                     Stroke(linewidth, Color(0, 0, 0))
@@ -422,16 +446,13 @@ private:
                 break;
             default:
                 (*doc) << Text(
-                    pPoint((double)idx / vecsize * params->width, y * params->height),
+                    pPoint(x    x / vecsize * params->width, y * params->height),
                     lss.str(), Color(bright, bright, bright),
                     Font((size * params->height) / 16, "Verdana")
                 );
                 break;
         }
-
     }
-    
-    
 };
 
 class Morphograph {
@@ -483,6 +504,9 @@ public:
         
         object_post((t_object *)x, "...render called...");
         
+        //write first lines for svg file into temp buf
+        append_svg_open(x);
+        
         //find the layer with the largest list for energy
         int max_frames = 0;
         for (unsigned i = 0; i < layers.size(); ++i) {
@@ -522,7 +546,7 @@ public:
                 double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
 
                 ShapeWriter swrite(x, layers[i].shape, doc);
-                swrite.set_drawstyle(x->l_style->s_name);
+                
                                                 
                 for(int k = 0; k < x->l_mapcount; k++){
                     // j is the frame
@@ -605,8 +629,11 @@ public:
 //                            object_error((t_object *)x, "x deviation is unimplemented.");
 //                        } break;
                         case PARAM_BRIGHTNESS: {
+                            
                             char b = curr_feature_datum * 255;
                             swrite.set_brightness(b);
+                            //object_post((t_object *)x, "brightness %d", b);
+                            
                         } break;
                         default: {
                             object_error((t_object *)x, "render: cannot find valid action id.");
@@ -615,8 +642,10 @@ public:
                     }
                 }
                 
+                swrite.set_drawstyle(x->l_style->s_name);
                 swrite.set_vecsize(vsize);
-                swrite.set_idx(j); //i is layer, j is analysis frame
+                //swrite.set_idx(j); //i is layer, j is analysis frame
+                swrite.set_x(double(j));
                 swrite.set_params(&params);
                 swrite.draw();
         
@@ -624,6 +653,7 @@ public:
         }
         
         (*doc).save ();
+        append_svg_close(x);
     }
     
 private:
@@ -1440,26 +1470,45 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
 //c functions: std max api
 //-------------------------------------------------------------------------------------------------
 
-//test filewriter --------------------------------------------
+//new filewriter --------------------------------------------
 //------------------------------------------------------------
+
+void append_svg_open(t_morphograph *x){
+    //initialize handle for svg filewriter
+    x->l_svgh = sysmem_newhandle(0);
+
+    //needs to grab dims from struct parameters
+    char *root = (char *)"<svg version=\"1.1\" width=\"600\" height=\"400\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+    my_sysmem_appendtextptrtohand(root, x->l_svgh);
+}
+
+//void append_svg_txt(t_morphograph *x, char *line){
+void append_svg_txt(t_morphograph *x, std::string linestr){
+    long linelen = linestr.length() + 1;
+    char line[linelen];
+    
+    strcpy(line, linestr.c_str());
+    my_sysmem_appendtextptrtohand(line, x->l_svgh);
+    memset(line, '\0', sizeof(char) * linelen); //this ok???
+}
+
+void append_svg_close(t_morphograph *x){
+    char *close = (char *)"</svg>";
+    my_sysmem_appendtextptrtohand(close, x->l_svgh);
+}
+
 void morphograph_write(t_morphograph *x, t_symbol *s){
+    //need this to avoid threading conflicts
     defer(x, (method)morphograph_dowrite, s, 0, NULL);
 }
 
 void morphograph_dowrite(t_morphograph *x, t_symbol *s){
-//    long filetype = 'TEXT', outtype;
     char filename[512];
-    //short path;
-
-    //jml
     short pathid;
     t_fourcc type = NULL;
     t_fourcc otype;
     
-    //prev
-    //saveasdialog_extended(filename, &path, &outtype, &filetype, 1)
- 
-    if (s == gensym("")) {      // if no argument supplied, ask for file
+    if (s == gensym("")) { // if no arg, ask for file
         if (saveasdialog_extended(filename, &pathid, &otype, &type, 1))     // non-zero: user cancelled
             return;
     } else {
@@ -1470,31 +1519,26 @@ void morphograph_dowrite(t_morphograph *x, t_symbol *s){
 }
 
 void morphograph_writefile(t_morphograph *x, char *filename, short path){
-
-    char *buf1 = (char *)"write me into a file\n";
-    char *buf2 = (char *)"another line\n";
-    char *buf3 = (char *)"line three here we are";
-    
-    long err;
-    t_filehandle fh;
-    t_handle th = sysmem_newhandle(0);
-
-    //append to text buffer
-    my_sysmem_appendtextptrtohand(buf1, th);
-    my_sysmem_appendtextptrtohand(buf2, th);
-    my_sysmem_appendtextptrtohand(buf3, th);
-
-    //create file
-    err = path_createsysfile(filename, path, 'TEXT', &fh);
-    if (err)
-        return;
-    //write file
-    err = sysfile_writetextfile(fh, th, TEXT_LB_NATIVE);
-    sysfile_close(fh);
-
+    //check to see if text buffer handle exists
+    if(x->l_svgh != NULL){
+        long err;
+        t_filehandle fh;
+            
+        //create file
+        err = path_createsysfile(filename, path, 'TEXT', &fh);
+        if (err)
+            return;
+        //write file
+        err = sysfile_writetextfile(fh, x->l_svgh, TEXT_LB_NATIVE);
+        sysfile_close(fh);
+    }else{
+        object_error((t_object *)x, "cannot write file - svg buffer is not properly initialized.");
+    }
 }
+
 //----------------------------------------------------------------
 
+//does nothing atm
 void morphograph_anything(t_morphograph *x, const t_symbol * const s, const long ac, const t_atom *av){
     
 }
@@ -1574,6 +1618,7 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         x->l_shape = NULL;
         x->l_fnamesvg = gensym("morphograph_init.svg");
         x->l_svg = NULL;
+        x->l_svgh = NULL;
         //x->hash_table = (t_hashtab *)hashtab_new(0);
         
         //fill UI option arrays for max window
