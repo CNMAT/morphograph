@@ -70,6 +70,7 @@ typedef struct _morphograph {
     void *l_outlet_1;
     Parameters l_params;
     t_buffer_ref *l_buffer_reference;   //buffer ref
+    t_handle l_svgh; //handle for svg text buffer
     //t_hashtab *hash_table;
 } t_morphograph;
 
