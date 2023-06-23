@@ -108,13 +108,11 @@ class ShapeWriter {
     t_morphograph *obj; //obj instead of x here
     Document *doc;
     Parameters *params;
-    float size;
-    float width, height, y, xdev, linewidth, trilen, yoffset;
-    //unsigned idx, vecsize, bright;
-    unsigned x, vecsize, bright, rotation; //make x a double???
-    double rv;
-    short drawstyle;
-    std::string linestr, bs, shape, xs, ys, ws, hs;
+    int vecsize;
+    float elem_width, elem_height, x, y, xdev, linewidth, trilen, yoffset, size;
+    unsigned int bright, rotation; //make x a double???
+    unsigned short drawstyle;
+    std::string linestr, bs, shape, xs, ys, ws, hs, xos, yos, ls;
     
     
 private:
@@ -132,8 +130,8 @@ public:
         //defaults
         size = 1.0;
         rotation = 0.;
-        width = 1.0;
-        height = 1.0;
+        elem_width = 8.0;   //min width - should be attribute???
+        elem_height = 8.0;  //min height - should be attribute???
         y = 0.5;
         xdev = 0.;
         bright = 0;
@@ -149,18 +147,25 @@ public:
     }
     
     void draw(){
-        //MAKE DRAW HAVE A GROUP DEFINITION FOR STROKE / STROKE-WIDTH
-        //<g><circle/><circle/></g> etc
         
+        float baseline_scalar = 5;
         //default strings for filewriter
-        
         float tx = (x / float(vecsize)) * float(params->width);
-        float default_size = 8.;
+        float ty = y * params->height;
+
+        float aw = elem_width + (baseline_scalar * size);   //actual width
+        float hwn = -1. * (aw / 2.);    //half width negative
+        float ah = elem_height + (baseline_scalar * size);  //actual height
+        float hhn = -1. * (ah / 2.);    //half height negative
         
+        ws = std::to_string(aw);
+        std::string offset_x = std::to_string(hwn);
+        hs = std::to_string(ah);
+        std::string offset_y = std::to_string(hhn);
         xs = std::to_string(tx);
-        ys = std::to_string(y * params->height);
-        ws = std::to_string(width * default_size);
-        hs = std::to_string(height * default_size);
+        ys = std::to_string(ty);
+         
+        ls = std::to_string(linewidth);
         bs = std::to_string(bright);
         
         // begin shape ------------------------------------------------
@@ -183,55 +188,70 @@ public:
             draw_triangle();
         }
         
+        //this should be part of a group soon  <g><>...</g>
         switch(drawstyle){
             case 0: //stroke; consider stroke width
+               	linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + ls + "\" ");
                 linestr.append("fill=\"transparent\" ");
-               	linestr.append("stroke=\"rgb(0,0,0)\"  stroke-width=\"0.2\" ");
                 break;
             case 1: //fill
-                linestr.append("fill=\"rgb(");
-                linestr.append(bs + "," + bs + "," + bs);
-                linestr.append(")\" ");
+                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
                 break;
             case 2: //both
-                linestr.append("stroke=\"rgb(0,0,0)\"  stroke-width=\"0.2\" ");
-                linestr.append("fill=\"rgb(");
-                linestr.append(bs + "," + bs + "," + bs);
-                linestr.append(")\" ");
+                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" "); //should be [linewidth]
+                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
                 break;
         }
         
         //transform characteristics
         std::string rstr = std::to_string(rotation);
-        std::string sc = std::to_string(size * 8.);
+        //std::string sc = std::to_string(size * 8.);
         
         linestr.append("transform=\""); //--------------------------
-        linestr.append("translate(" + xs + "," + ys + ") ");
-        linestr.append("rotate(" + rstr + ", 50, 50) "); //2nd and 3rd args are in percentage
-        linestr.append("scale(" + sc + ")");
+        linestr.append("translate(" + xs + " " + ys + ") ");
+        //linestr.append("rotate(" + rstr + ", 50, 50) "); //2nd and 3rd args are in percentage
+        linestr.append("rotate(" + rstr + ") ");
+        linestr.append("translate(" + offset_x + " " + offset_y + ")");
         linestr.append("\""); //-------------------------------------
         
         // append linestring text to doc
         append_svg_txt(obj, linestr);
         
         // end shape ------------------------------------------------
-        append_svg_txt(obj, " />\n"); //close
+        append_svg_txt(obj, "/>\n"); //close
+        
+        //lines should be brought back in via a max attribute
+        /*
+        // test lines -------------------------------------------------
+        std::string tempwidth = std::to_string(params->width);
+        std::string tempheight = std::to_string(params->height);
+        
+        linestr = "<line x1=\"" + xs + "\" ";
+        linestr.append("y1=\"0\" ");
+        //linestr.append("y1=\"" + tempheight);
+        linestr.append("x2=\"" + xs + "\" ");
+        //linestr.append("y2=\"0\" ");
+        linestr.append("y2=\"" + tempheight + "\" ");
+        linestr.append("stroke-width=\"" + ls + "\" stroke=\"black\"/>\n");
+        append_svg_txt(obj, linestr);
+         */
+
     }
     
     void set_params(Parameters *_params){
         params = _params;
     }
     void set_rotation(float _rot){
-        rotation = uint(_rot) % 360;
+        rotation = unsigned(_rot) % 360;
     }
     void set_vecsize(long _vsize){
         vecsize = _vsize;
     }
     void set_width(float _wid){
-        width = _wid;
+        elem_width = _wid;
     }
     void set_height(float _height){
-        height = _height;
+        elem_height = _height;
     }
     void set_size(float _size){
         size = _size;
@@ -264,80 +284,13 @@ public:
             drawstyle = 2;
         }
     }
+    void set_drawlines(bool _t){
+        
+    }
     
 private:
 
     void draw_triangle(){
-    
-        switch(drawstyle){
-            case 0: { //stroke
-                //initial pos
-                double tx = x / vecsize * params->width;
-                double ty = (y * params->height) - 10.;
-                Polygon pg = Polygon(Fill(), Stroke(linewidth, Color(0,0,0)));
-                pg << pPoint(tx, ty);
-                double p2x = (tx + (size * 20)) * width;
-                pPoint p2 = pPoint(p2x, ty + 0);
-                pg << p2;
-                double p2y = (ty + (size * 20)) * height;
-                pPoint p3 = pPoint(tx, p2y);
-                pg << p3;
-                
-                (*doc) << pg;
-            }
-                break;
-            case 1: { //fill
-                //initial pos
-                double tx = x / vecsize * params->width;
-                double ty = (y * params->height) - 10.;
-                Polygon pg = Polygon(Fill(Color(bright, bright, bright)));
-                pg << pPoint(tx, ty);
-                double p2x = (tx + (size * 20)) * width;
-                pPoint p2 = pPoint(p2x, ty + 0);
-                pg << p2;
-                double p2y = (ty + (size * 20)) * height;
-                pPoint p3 = pPoint(tx, p2y);
-                pg << p3;
-                
-                (*doc) << pg;
-            }
-                break;
-                
-            case 2: { //both
-                //initial pos
-                double tx = x / vecsize * params->width;
-                double ty = (y * params->height) - 10.;
-                Polygon pg = Polygon(Fill(Color(bright, bright, bright)), Stroke(linewidth, Color(0,0,0)));
-                pg << pPoint(tx, ty);
-                double p2x = (tx + (size * 20)) * width;
-                pPoint p2 = pPoint(p2x, ty + 0);
-                pg << p2;
-                double p2y = (ty + (size * 20)) * height;
-                pPoint p3 = pPoint(tx, p2y);
-                pg << p3;
-                
-                (*doc) << pg;
-            }
-                break;
-                
-            default: {
-                //initial pos
-                double tx = x / vecsize * params->width;
-                double ty = (y * params->height) - 10.;
-                Polygon pg = Polygon(Fill(Color(bright, bright, bright)));
-                pg << pPoint(tx, ty);
-                double p2x = (tx + (size * 20)) * width;
-                pPoint p2 = pPoint(p2x, ty + 0);
-                pg << p2;
-                double p2y = (ty + (size * 20)) * height;
-                pPoint p3 = pPoint(tx, p2y);
-                pg << p3;
-                
-                (*doc) << pg;
-            }
-                break;
-        }
-
     }
     
     void draw_circle(){
@@ -479,11 +432,16 @@ public:
 
         //draw all elements after calculating relevant data
         for (unsigned i = 0; i < layers.size(); ++i) {
+            //how do we know that energy's size is the size of a vector???
+            //need to look into this
             long vsize = layers[i].desc.energy.size();
             
             //j represents the analysis frame
-            //why do we need to skip every other analysis frame ???
-            for (unsigned j = 0; j < vsize; j+=2) {
+            //why do we need to skip analysis frames?
+            //this should be a parameter to thin the data out...
+            unsigned skip_by = 2;
+            
+            for (unsigned j = 0; j < vsize; j += skip_by) {
                 
                 double sc_freq = (layers[i].desc.speccentr[j] / (max_freq - min_freq)) + min_freq;
                 double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
@@ -1572,8 +1530,8 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         x->l_params.sr = 44100.0;
         x->l_params.fft_size = 4096;
         x->l_params.hop_size = 512;
-        x->l_params.width = 600;
-        x->l_params.height = 600;
+        x->l_params.width = 100;
+        x->l_params.height = 100;
         x->l_params.zoom = 3;
         
         //globals
