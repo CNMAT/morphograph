@@ -11,9 +11,6 @@
 #include <vector>
 #include <string>
 #include "mgraph.h"
-#include "cella/svg.h"
-
-
 
 struct Descriptors {
     std::vector<double> highest_peak_Hz;
