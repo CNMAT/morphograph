@@ -3,7 +3,7 @@
 external_dir="externals"
 xattr -dr $external_dir/morphograph.mxo
 
-backup_dir="/Users/jml/Desktop/mgraph_patchers_backup"
+backup_dir="/Users/jml/Desktop/mgraph_backup"
 
 echo "------------------------------"
 echo "------------------------------"
