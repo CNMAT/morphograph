@@ -1,18 +1,9 @@
 //max ---------------------------------------------------------------------------------------------
 
 #include "ext.h"                //core externals header
-#include "ext_obex.h"           //basic max object functionality
-
-//need to include???
-#include "ext_path.h"
-#include "ext_sysfile.h"
-
 #include "ext_appendtohandle.h" //non-exported code from c74 - filewrite
-
 #include "ext_dictobj.h"
 #include "ext_buffer.h"
-#include "z_dsp.h"
-#include "jpatcher_api.h"       //UI drawing in the max app
 #include "jgraphics.h"          //JUCE-based drawing methods internal to the object
 
 //morphograph -------------------------------------------------------------------------------------
@@ -21,11 +12,7 @@
 
 //c++ ---------------------------------------------------------------------------------------------
 
-#include "cella/utilities.h"
-#include "cella/FFT.h"
 #include "cella/features.h"
-#include "cella/algorithms.h"
-
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -106,7 +93,6 @@ static void mgraph_cpp(t_morphograph *x);
 
 class ShapeWriter {
     t_morphograph *obj; //obj instead of x here
-    Document *doc;
     Parameters *params;
     int vecsize;
     float elem_width, elem_height, x, y, xdev, linewidth, trilen, yoffset, size;
@@ -121,10 +107,9 @@ private:
     
 public:
     
-    ShapeWriter(t_morphograph *_obj, std::string &_shape, Document *_doc) {
+    ShapeWriter(t_morphograph *_obj, std::string &_shape) {
     //fork out primitive code to be the default, then stroke/fill
         obj = _obj;
-        doc = _doc;
         shape = _shape;
     
         //defaults
@@ -313,39 +298,39 @@ private:
     void draw_letter(){
         int l = rand() % 26;
         char ls = 'a';
-        std::stringstream lss;
-        lss << (char)(ls + l);
+   //     std::stringstream lss;
+       //lss << (char)(ls + l);
         //std::cout << lss.str() << std::endl;
         switch(drawstyle){
             case 0://stroke
-                (*doc) << Text(
-                    pPoint(x / vecsize * params->width, y * params->height),
-                    lss.str(), Fill(),
-                    Font((size * params->height) / 16, "Verdana"),
-                    Stroke(linewidth, Color(0, 0, 0))
-                );
+//                (*doc) << Text(
+//                    pPoint(x / vecsize * params->width, y * params->height),
+//                    lss.str(), Fill(),
+//                    Font((size * params->height) / 16, "Verdana"),
+//                    Stroke(linewidth, Color(0, 0, 0))
+//                );
                 break;
             case 1://fill
-                (*doc) << Text(
-                    pPoint(x / vecsize * params->width, y * params->height),
-                    lss.str(), Color(bright, bright, bright),
-                    Font((size * params->height) / 16, "Verdana")
-                );
+//                (*doc) << Text(
+//                    pPoint(x / vecsize * params->width, y * params->height),
+//                    lss.str(), Color(bright, bright, bright),
+//                    Font((size * params->height) / 16, "Verdana")
+//                );
                 break;
             case 2://both
-                (*doc) << Text(
-                    pPoint(x / vecsize * params->width, y * params->height),
-                    lss.str(), Color(bright, bright, bright),
-                    Font((size * params->height) / 16, "Verdana"),
-                    Stroke(linewidth, Color(0, 0, 0))
-                );
+//                (*doc) << Text(
+//                    pPoint(x / vecsize * params->width, y * params->height),
+//                    lss.str(), Color(bright, bright, bright),
+//                    Font((size * params->height) / 16, "Verdana"),
+//                    Stroke(linewidth, Color(0, 0, 0))
+//                );
                 break;
             default:
-                (*doc) << Text(
-                    pPoint(x / vecsize * params->width, y * params->height),
-                    lss.str(), Color(bright, bright, bright),
-                    Font((size * params->height) / 16, "Verdana")
-                );
+//                (*doc) << Text(
+//                    pPoint(x / vecsize * params->width, y * params->height),
+//                    lss.str(), Color(bright, bright, bright),
+//                    Font((size * params->height) / 16, "Verdana")
+//                );
                 break;
         }
     }
@@ -354,7 +339,6 @@ private:
 class Morphograph {
     
     t_morphograph *x;
-    Document *doc;
     Parameters params;
     BufferInstance *bi;
     std::vector<Layer> layers;
@@ -374,15 +358,9 @@ public:
         x = _x;
         params = x->l_params;
         bi = _b;
-        fname = std::string(x->l_fnamesvg->s_name);
-        fpath = std::string(x->l_filepath->s_name);
-        
-        Dimensions dims (params.width, params.height);
-        doc = new Document (fpath + fname, Layout(dims, Layout::BottomLeft, params.zoom));
     }
     
     virtual ~Morphograph () {
-        delete doc;
     }
     
     void add_layer (const std::string &shape) {
@@ -446,7 +424,7 @@ public:
                 double sc_freq = (layers[i].desc.speccentr[j] / (max_freq - min_freq)) + min_freq;
                 double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
 
-                ShapeWriter swrite(x, layers[i].shape, doc);
+                ShapeWriter swrite(x, layers[i].shape);
                 
                                                 
                 for(int k = 0; k < x->l_mapcount; k++){
@@ -552,9 +530,8 @@ public:
         
             }
         }
-        
-        (*doc).save ();
         append_svg_close(x);
+        //do something here to call write()
     }
     
 private:
@@ -633,10 +610,9 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
     Parameters p = x->l_params;
     
     if ((double)b->getSampleRate() != p.sr) {
-        std::stringstream err;
+       
         object_error((t_object *)x, "%s invalid sampling rate in buffer's file %s: %8f vs params of object %8f.", b->getFileName(), b->getSampleRate(), p.sr);
-        err << "invalid sampling rate in buffer's file " << b->getFileName() << ": " << b->getSampleRate () << " vs params of object: " << p.sr;
-        throw std::runtime_error (err.str ());
+       
         return;
     }
     
@@ -672,13 +648,13 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
                 
         } else {
             
-            std::stringstream err;
+            //std::stringstream err;
             char *tmpstr = b->getFileName();
             //object_error((t_object *)x, "invalid number of channels in : %s.  Mono or stereo only.", tmpstr);
             object_error((t_object *)x, "invalid number of channels in : %s.  Mono only.", tmpstr);
             //err << "invalid number of channels in << " << tmpstr << "(mono or stereo only)";
-            err << "invalid number of channels in << " << tmpstr << "(mono only)";
-            throw std::runtime_error (err.str ());
+            //err << "invalid number of channels in << " << tmpstr << "(mono only)";
+           // throw std::runtime_error (err.str ());
             
         }
     }
@@ -883,7 +859,6 @@ static void mgraph_cpp(t_morphograph *x) {
         //}
         
         object_post((t_object *)x, "--------- Finished processing ---------");
-        object_post((t_object *)x, "Check your disk for a file called %s", x->l_fnamesvg->s_name);
         outlet_bang(x->l_outlet_1);
        
         /*
@@ -911,24 +886,17 @@ static void mgraph_cpp(t_morphograph *x) {
 void morphograph_dictionary(t_morphograph *x, t_symbol *s){
     
     t_dictionary *d = dictobj_findregistered_retain(s);
-    t_symbol *tfilename, *tshape, *tstyle;
+    t_symbol *tshape, *tstyle;
     
     if(!d){  //throw error if dictionary cannot be found
         object_error((t_object *)x, "unable to reference dictionary named %s", s->s_name);
         return;
     }
-    
-    //filename to be written to disk as SVG file
-    if(dictionary_hasentry(d, filename)){
-        dictionary_getsym(d, filename, &tfilename);
-        object_post((t_object *)x, "dict in: filename: %s", tfilename->s_name);
-        x->l_fnamesvg = tfilename;
-    }
-    
+        
     //process shape (only one currently)
     if(dictionary_hasentry(d, shape)){
         dictionary_getsym(d, shape, &tshape);
-        object_post((t_object *)x, "dict in: shape: %s", tfilename->s_name);
+        object_post((t_object *)x, "dict in: shape: %s", tshape->s_name);
 
         x->l_shape = tshape;
     }
@@ -1516,7 +1484,6 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         x->l_filepath = NULL;
         x->l_buffer_reference = NULL;
         x->l_shape = NULL;
-        x->l_fnamesvg = gensym("morphograph_init.svg");
         x->l_svg = NULL;
         x->l_svgh = NULL;
         //x->hash_table = (t_hashtab *)hashtab_new(0);
