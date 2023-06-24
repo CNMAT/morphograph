@@ -39,7 +39,7 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s);
 //void morphograph_mapping_table(t_morphograph *x, t_symbol *s, long argc, t_atom *argv);
 //void morphograph_mapping_post(t_morphograph *x);
 void morphograph_set(t_morphograph *x, t_symbol *s);
-void morphograph_set_path(t_morphograph *x, t_symbol *s);
+//void morphograph_set_path(t_morphograph *x, t_symbol *s);
 void morphograph_view(t_morphograph *x); //view buffer
 void morphograph_size(t_morphograph *x, long width, long height); //ui size
 void morphograph_load(t_morphograph *x, t_symbol *s);
@@ -98,7 +98,7 @@ class ShapeWriter {
     float elem_width, elem_height, x, y, xdev, linewidth, trilen, yoffset, size;
     unsigned int bright, rotation; //make x a double???
     unsigned short drawstyle;
-    std::string linestr, bs, shape, xs, ys, ws, hs, xos, yos, ls;
+    std::string linestr, bs, shape, xs, ys, ws, hs, xos, yos, lws;
     
     
 private:
@@ -150,7 +150,7 @@ public:
         xs = std::to_string(tx);
         ys = std::to_string(ty);
          
-        ls = std::to_string(linewidth);
+        lws = std::to_string(linewidth);
         bs = std::to_string(bright);
         
         // begin shape ------------------------------------------------
@@ -176,7 +176,7 @@ public:
         //this should be part of a group soon  <g><>...</g>
         switch(drawstyle){
             case 0: //stroke; consider stroke width
-               	linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + ls + "\" ");
+               	linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + lws + "\" ");
                 linestr.append("fill=\"transparent\" ");
                 break;
             case 1: //fill
@@ -249,6 +249,9 @@ public:
     }
     void set_xdev(float _xdev){
         xdev = _xdev;
+    }
+    void set_linewidth(float _lwidth){
+        linewidth = _lwidth;
     }
     /*
     void set_idx(unsigned _i){
@@ -513,6 +516,10 @@ public:
                             swrite.set_brightness(b);
                             //object_post((t_object *)x, "brightness %d", b);
                             
+                        } break;
+                        case PARAM_LINEWIDTH: {
+                            //object_post((t_object *)x, "detected linewidth; curr feature data: %f", curr_feature_datum);
+                            swrite.set_linewidth(curr_feature_datum * 2.5);
                         } break;
                         default: {
                             object_error((t_object *)x, "render: cannot find valid action id.");
@@ -1028,6 +1035,7 @@ static void populate_actions(t_morphograph *x){
     x->l_actions[3] = (char *)"ylocation";
     x->l_actions[4] = (char *)"brightness";
     x->l_actions[5] = (char *)"rotation";
+    x->l_actions[6] = (char *)"linewidth";
 //    x->l_actions[6] = (char *)"xdeviation";
     
 }
@@ -1115,10 +1123,10 @@ void morphograph_process(t_morphograph *x) {
         return;
     }
     
-    if(!x->l_filepath){
-        object_error((t_object *)x, "No valid filepath! Cannot complete file writing, aborting analysis.");
-        return;
-    }
+//    if(!x->l_filepath){
+//        object_error((t_object *)x, "No valid filepath! Cannot complete file writing, aborting analysis.");
+//        return;
+//    }
  
     object_post((t_object *)x, "--------- Processing morphograph... ---------");
     //maybe instead of calling this here, we could give this function an arg for the dictionary
@@ -1141,10 +1149,10 @@ void morphograph_set(t_morphograph *x, t_symbol *s) {
     //optionally use bang() for this
 }
 
-void morphograph_set_path(t_morphograph *x, t_symbol *s) {
-    x->l_filepath = s;
-    object_post((t_object *)x, "svg write path: %s", x->l_filepath->s_name);
-}
+//    void morphograph_set_path(t_morphograph *x, t_symbol *s) {
+//        x->l_filepath = s;
+//        object_post((t_object *)x, "svg write path: %s", x->l_filepath->s_name);
+//    }
 
 //this should be handled by the process_descmap() function
 //void morphograph_mapping_table(t_morphograph *x, short argc, t_atom *argv);
@@ -1541,7 +1549,7 @@ void ext_main(void *r) {
     //register custom user methods
     class_addmethod(c, (method)morphograph_set, "set", A_SYM, 0);
     class_addmethod(c, (method)morphograph_size, "size", A_LONG, A_LONG, 0);
-    class_addmethod(c, (method)morphograph_set_path, "set_path", A_SYM, 0);
+    //class_addmethod(c, (method)morphograph_set_path, "set_path", A_SYM, 0);
     class_addmethod(c, (method)morphograph_dictionary, "dictionary", A_SYM, 0);
     class_addmethod(c, (method)morphograph_load, "load", A_DEFSYM, 0); //default sym; empty string???
     class_addmethod(c, (method)morphograph_process, "process", 0);
