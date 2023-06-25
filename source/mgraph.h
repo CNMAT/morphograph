@@ -31,8 +31,7 @@
 //#define FEATURE_SPECSLOPE 12
 //#define FEATURE_INHARM 13
 
-//#define NUM_ACTIONS 7
-#define NUM_ACTIONS 6
+#define NUM_ACTIONS 7
 
 #define PARAM_XSCALE 0
 #define PARAM_YSCALE 1
@@ -40,6 +39,7 @@
 #define PARAM_YLOC 3
 #define PARAM_BRIGHTNESS 4
 #define PARAM_ROTATION 5
+#define PARAM_LINEWIDTH 6
 //#define PARAM_XDEV 6
 
 #define NUM_SHAPES 6
@@ -71,6 +71,8 @@ typedef struct _morphograph {
     Parameters l_params;
     t_buffer_ref *l_buffer_reference;   //buffer ref
     t_handle l_svgh; //handle for svg text buffer
+    
+    bool verbose;
     //t_hashtab *hash_table;
 } t_morphograph;
 
