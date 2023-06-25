@@ -39,14 +39,11 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s);
 //void morphograph_mapping_table(t_morphograph *x, t_symbol *s, long argc, t_atom *argv);
 //void morphograph_mapping_post(t_morphograph *x);
 void morphograph_set(t_morphograph *x, t_symbol *s);
-//void morphograph_set_path(t_morphograph *x, t_symbol *s);
+void morphograph_set_path(t_morphograph *x, t_symbol *s);
 void morphograph_view(t_morphograph *x); //view buffer
 void morphograph_size(t_morphograph *x, long width, long height); //ui size
 void morphograph_load(t_morphograph *x, t_symbol *s);
 void morphograph_process(t_morphograph *x);
-
-//------------------TEST FILE WRITER-------------------------------
-//-----------------------------------------------------------------
 void morphograph_writefile(t_morphograph *x, char *filename, short path);
 void morphograph_dowrite(t_morphograph *x, t_symbol *s);
 void morphograph_write(t_morphograph *x, t_symbol *s);
@@ -345,8 +342,6 @@ class Morphograph {
     Parameters params;
     BufferInstance *bi;
     std::vector<Layer> layers;
-    std::string fname;
-    std::string fpath;
 
 private:
     
@@ -368,7 +363,6 @@ public:
     
     void add_layer (const std::string &shape) {
         Layer l;
-        l.fname = fname;
         l.shape = shape;
         analyse_cpp(x, l.desc, bi);    //the contents of l.desc is implied because I'm not manipulating this struct currently
                                     //might want to populate this with the spectral features passed in via dictionary input
@@ -379,7 +373,7 @@ public:
     
     void render() {
         
-        object_post((t_object *)x, "...render called...");
+        object_post((t_object *)x, "Rendering...");
         
         //write first lines for svg file into temp buf
         append_svg_open(x);
@@ -479,7 +473,7 @@ public:
                         } break;
                             
                         default: {
-                            object_error((t_object *)x, "render: cannot find valid feature id.");
+                            object_error((t_object *)x, "Render: Unknown or invalid feature id.  Aborting.");
                             return;
                         }
                     }
@@ -729,23 +723,26 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
         
         //end default processes -----------------------------------------------
         
+        bool verbose = x->verbose;
         //iterate through the map list for features
-        
         for(i = 0; i < x->l_mapcount; i++) {
             switch(get_feature_id(x, i)) {
                 case FEATURE_ENERGY: {
-                    object_post((t_object *)x, "spec energy: %f", e * 10.);
+                    if(verbose)
+                        object_post((t_object *)x, "spec energy: %f", e * 10.);
                     //d.energy.push_back(e * 10.);
                 } break;
                 case FEATURE_ZCR: {
                     //double z = zcr<double>(&vsamples[ptr], p.fft_size / 2);
                     double z = zcr<double>(&vsamples[ptr], p.fft_size);
-                    object_post((t_object *)x, "spec zcr: %f", z * 10.);
+                    if(verbose)
+                        object_post((t_object *)x, "spec zcr: %f", z * 10.);
                     d.zcr.push_back(z * 10.);
                 } break;
                 case FEATURE_HFC: {
                     double h = hfc(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "hfc: %f", h);
+                    if(verbose)
+                        object_post((t_object *)x, "hfc: %f", h);
                     d.hfc.push_back(h);
                 } break;
 //                case FEATURE_INHARM: {
@@ -756,7 +753,8 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
 //                } break;
                 case FEATURE_SPECIRR: {
                     double si = specirr(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec irr: %f", si * 0.001);
+                    if(verbose)
+                        object_post((t_object *)x, "spec irr: %f", si * 0.001);
                     d.specirr.push_back(si * 0.001);
                 } break;
 //                case FEATURE_SPECCENTER: {
@@ -769,12 +767,14 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
 //                } break;
                 case FEATURE_SPECSKEW: {
                     double ssk = specskew(&amps[0], &freqs[0], p.fft_size / 2, sc, sspr);
-                    object_post((t_object *)x, "spec skew: %f", ssk * 0.1);
+                    if(verbose)
+                        object_post((t_object *)x, "spec skew: %f", ssk * 0.1);
                     d.specskew.push_back(ssk * 0.1);
                 } break;
                 case FEATURE_SPECKURT: {
                     double k = speckurt(&amps[0], &freqs[0], p.fft_size / 2, sc, sspr);
-                    object_post((t_object *)x, "spec kurt: %f", k);
+                    if(verbose)
+                        object_post((t_object *)x, "spec kurt: %f", k);
                     d.speckurt.push_back(k * 0.01);
                 } break;
 //                case FEATURE_SPECFLUX: {
@@ -795,17 +795,19 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
 //                } break;
                 case FEATURE_SPECFLAT: {
                     double sf = specflat(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec flatness: %f", sf * 10000.);
+                    if(verbose)
+                        object_post((t_object *)x, "spec flatness: %f", sf * 10000.);
                     d.specflat.push_back(sf * 10000.);
                 } break;
                 case FEATURE_SPECCREST: {
                     double scr = speccrest(&amps[0], p.fft_size / 2);
-                    object_post((t_object *)x, "spec crest: %f", scr * 10);
+                    if(verbose)
+                        object_post((t_object *)x, "spec crest: %f", scr * 10);
                     d.speccrest.push_back(scr * 10);
                 } break;
                     
                 default: {
-                    object_error((t_object *)x, "analysis: cannot find valid feature id.");
+                    object_error((t_object *)x, "Analysis: input feature invalid; bailing.");
                     feature_valid = false;
                 }
             }
@@ -843,7 +845,7 @@ static int get_action_id(t_morphograph *x, short curr) {
     return -1;
 }
 
-//this function calls some c++ code
+//run the cpp portion of the morphograph; assumes setup has completed
 static void mgraph_cpp(t_morphograph *x) {
 
     std::string tshape = std::string(x->l_shape->s_name);
@@ -854,7 +856,7 @@ static void mgraph_cpp(t_morphograph *x) {
         BufferInstance b(x);
         Morphograph graph(x, &b);
         
-        //THIS NEEDS TO CHANGE SOON
+        //THIS NEEDS TO CHANGE SOON ???
         //do not compute the analysis when you define the shape; shape is for rendering
         
         graph.add_layer(tshape);  //by default we'll only draw a single layer
@@ -865,17 +867,25 @@ static void mgraph_cpp(t_morphograph *x) {
         //    graph.add_layer(atom_getsym(x->l_shapes[i])->s_name);
         //}
         
-        object_post((t_object *)x, "--------- Finished processing ---------");
+        object_post((t_object *)x, "///////// Finished processing /////////");
         outlet_bang(x->l_outlet_1);
-       
-        /*
-         //load a file after done processing???
-         //if so, need to know if we can load this function internally
-        if(x->l_svg){
-            morphograph_load();
-        }
-         */
     
+        if(x->l_filepath && x->l_fnamesvg){
+            
+            t_symbol *fp;
+            
+            char full_file_path[strlen(x->l_filepath->s_name) + strlen(x->l_fnamesvg->s_name)];
+            strcpy(full_file_path, x->l_filepath->s_name);
+            strcat(full_file_path, x->l_fnamesvg->s_name);
+            
+            fp = gensym(full_file_path);
+            
+            morphograph_write(x, fp);
+            morphograph_load(x, fp);
+        }else{
+            object_error((t_object *)x, "cannot load svg file; please check filepath/filename");
+        }
+        
     } catch (std::exception &e) {
         object_error((t_object *)x, "error calling morphograph: %s", e.what());
     } catch (...) {
@@ -893,33 +903,50 @@ static void mgraph_cpp(t_morphograph *x) {
 void morphograph_dictionary(t_morphograph *x, t_symbol *s){
     
     t_dictionary *d = dictobj_findregistered_retain(s);
-    t_symbol *tshape, *tstyle;
+    t_symbol *tfilename, *tshape, *tstyle;
+    short criteria = 0;
     
     if(!d){  //throw error if dictionary cannot be found
         object_error((t_object *)x, "unable to reference dictionary named %s", s->s_name);
         return;
     }
+    
+    //filename to be written to disk as SVG file
+    //maybe check to make sure about extension ???
+    if(dictionary_hasentry(d, filename)){
+        dictionary_getsym(d, filename, &tfilename);
+        //object_post((t_object *)x, "dict in: filename: %s", tfilename->s_name);
+        criteria++;
+        x->l_fnamesvg = tfilename;
+    }
         
     //process shape (only one currently)
     if(dictionary_hasentry(d, shape)){
         dictionary_getsym(d, shape, &tshape);
-        object_post((t_object *)x, "dict in: shape: %s", tshape->s_name);
-
+        //object_post((t_object *)x, "dict in: shape: %s", tshape->s_name);
+        criteria++;
         x->l_shape = tshape;
     }
     
     if(dictionary_hasentry(d, style)){
         dictionary_getsym(d, style, &tstyle);
-        object_post((t_object *)x, "dict in: style: %s", tstyle->s_name);
+        //object_post((t_object *)x, "dict in: style: %s", tstyle->s_name);
+        criteria++;
         x->l_style = tstyle;
     }
     
     if(dictionary_hasentry(d, descmap)){
         process_descmap(x, d);
+        criteria++;
     }
      
     if(dictionary_hasentry(d, transform)){
         process_transform(x, d);
+        criteria++;
+    }
+    
+    if(criteria != 5){
+        object_post((t_object *)x, "criteria not met!  Please check dictionary before processing morphograph.");
     }
     
     dictobj_release(d);
@@ -1065,25 +1092,25 @@ static void post_info(void){
 static void post_options(t_morphograph *x){
     short i;
     
-    object_post((t_object *)x, "--------- Shapes ---------");
+    object_post((t_object *)x, "///////// Shapes /////////");
     
     for(i = 0; i < NUM_SHAPES; i++){
         object_post((t_object *)x, "shape %d: %s", i, x->l_shapes[i]);
     }
 
-    object_post((t_object *)x, "--------- Spectral Featurelist ---------");
+    object_post((t_object *)x, "///////// Spectral Featurelist /////////");
 
     for(i = 0; i < NUM_FEATURES; i++){
         object_post((t_object *)x, "feature %d: %s", i, x->l_features[i]);
     }
     
-    object_post((t_object *)x, "--------- Shape Actions ---------");
+    object_post((t_object *)x, "///////// Shape Actions /////////");
     
     for(i = 0; i < NUM_ACTIONS; i++){
         object_post((t_object *)x, "action %d: %s", i, x->l_actions[i]);
     }
     
-    object_post((t_object *)x, "--------- Draw Styles ---------");
+    object_post((t_object *)x, "///////// Draw Styles /////////");
     
     for(i = 0; i < NUM_STYLES; i++){
         object_post((t_object *)x, "style %d: %s", i, x->l_styles[i]);
@@ -1098,7 +1125,7 @@ static void post_mappings(t_morphograph *x){
         return;
     }
     
-    object_post((t_object *)x, "--------- Mappings ---------");
+    object_post((t_object *)x, "///////// Mappings /////////");
 
     for(i = 0; i < x->l_mapcount; i++){
         object_post((t_object *)x, "mapping id-%d -> feature %s mapped to %s", i, x->l_chosen_features[i]->s_name, x->l_chosen_actions[i]->s_name);
@@ -1107,7 +1134,7 @@ static void post_mappings(t_morphograph *x){
 }
 
 static void post_parameters(t_morphograph *x){
-    object_post((t_object *)x, "--------- Analysis / SVG parameters ---------");
+    object_post((t_object *)x, "///////// Analysis / SVG parameters /////////");
     object_post((t_object *)x, "sample rate: %f", x->l_params.sr);
     object_post((t_object *)x, "fft size: %d", x->l_params.fft_size);
     object_post((t_object *)x, "hop size: %d", x->l_params.hop_size);
@@ -1123,12 +1150,17 @@ void morphograph_process(t_morphograph *x) {
         return;
     }
     
-//    if(!x->l_filepath){
-//        object_error((t_object *)x, "No valid filepath! Cannot complete file writing, aborting analysis.");
-//        return;
-//    }
+    if(!x->l_filepath){
+        object_error((t_object *)x, "No valid filepath! Cannot complete file writing, aborting analysis.");
+        return;
+    }
+    
+    if(!x->l_fnamesvg){
+        object_error((t_object *)x, "No valid filename, which may also indicate that a mapping dictionary hasn't been sent.  Aborting.");
+        return;
+    }
  
-    object_post((t_object *)x, "--------- Processing morphograph... ---------");
+    object_post((t_object *)x, "Processing morphograph...");
     //maybe instead of calling this here, we could give this function an arg for the dictionary
     //to use to parse shapelayer mapping definitions... it could go above dictionary_getkeys()
     mgraph_cpp(x);
@@ -1149,10 +1181,10 @@ void morphograph_set(t_morphograph *x, t_symbol *s) {
     //optionally use bang() for this
 }
 
-//    void morphograph_set_path(t_morphograph *x, t_symbol *s) {
-//        x->l_filepath = s;
-//        object_post((t_object *)x, "svg write path: %s", x->l_filepath->s_name);
-//    }
+void morphograph_set_path(t_morphograph *x, t_symbol *s) {
+    x->l_filepath = s;
+    object_post((t_object *)x, "SVG write path: %s", x->l_filepath->s_name);
+}
 
 //this should be handled by the process_descmap() function
 //void morphograph_mapping_table(t_morphograph *x, short argc, t_atom *argv);
@@ -1490,7 +1522,10 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         x->l_numlayers = 0;
         x->l_mapcount = 0;
         x->l_filepath = NULL;
+        x->l_fnamesvg = NULL;
         x->l_buffer_reference = NULL;
+        x->verbose = false;
+    
         x->l_shape = NULL;
         x->l_svg = NULL;
         x->l_svgh = NULL;
@@ -1519,6 +1554,8 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         
         attr_dictionary_process(x,d);
         jbox_ready(&x->l_box);
+        
+        
         
 //        if(attrstart){
 //            object_attr_setvalueof(x, gensym("keys"), attrstart, argv);
@@ -1549,7 +1586,7 @@ void ext_main(void *r) {
     //register custom user methods
     class_addmethod(c, (method)morphograph_set, "set", A_SYM, 0);
     class_addmethod(c, (method)morphograph_size, "size", A_LONG, A_LONG, 0);
-    //class_addmethod(c, (method)morphograph_set_path, "set_path", A_SYM, 0);
+    class_addmethod(c, (method)morphograph_set_path, "set_path", A_SYM, 0);
     class_addmethod(c, (method)morphograph_dictionary, "dictionary", A_SYM, 0);
     class_addmethod(c, (method)morphograph_load, "load", A_DEFSYM, 0); //default sym; empty string???
     class_addmethod(c, (method)morphograph_process, "process", 0);
@@ -1563,14 +1600,21 @@ void ext_main(void *r) {
     class_addmethod(c, (method)morphograph_view, "view", 0);
     class_addmethod(c, (method)morphograph_paint, "paint", A_CANT, 0);
     
-    //ATTR declarations
+    //misc attributes
+    
+    CLASS_ATTR_CHAR(c, "verbose", 0, t_morphograph, verbose);
+    CLASS_ATTR_STYLE(c, "verbose", 0, "onoff");
+    CLASS_ATTR_LABEL(c, "verbose", 0, "Verbose Mode");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "verbose", 0, "0");
+    
+    //morphograph specific attr declarations
     
     CLASS_STICKY_ATTR(c, "category", 0, "Analysis");
     
     CLASS_ATTR_DOUBLE(c, "p_samplerate", 0, t_morphograph, l_params.sr);
     CLASS_ATTR_LABEL(c, "p_samplerate", 0, "Analysis Sample Rate");
     //CLASS_ATTR_ORDER(c, "p_samplerate", 0, "1");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_samplerate", 0, "44100.0")
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_samplerate", 0, "44100.0");
     
     CLASS_ATTR_LONG(c, "p_fftsize", 0, t_morphograph, l_params.fft_size);
     CLASS_ATTR_LABEL(c, "p_fftsize", 0, "Analysis FFT Size");
