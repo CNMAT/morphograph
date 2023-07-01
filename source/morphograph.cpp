@@ -41,7 +41,7 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s);
 void morphograph_set(t_morphograph *x, t_symbol *s);
 void morphograph_set_path(t_morphograph *x, t_symbol *s);
 void morphograph_view(t_morphograph *x); //view buffer
-void morphograph_size(t_morphograph *x, long width, long height); //ui size
+//void morphograph_size(t_morphograph *x, long width, long height); //ui size
 void morphograph_load(t_morphograph *x, t_symbol *s);
 void morphograph_process(t_morphograph *x);
 void morphograph_writefile(t_morphograph *x, char *filename, short path);
@@ -63,7 +63,7 @@ static void process_descmap(t_morphograph *x, t_dictionary *d);
 static void process_transform(t_morphograph *x, t_dictionary *d);
 static int get_feature_id(t_morphograph *x, short curr);
 static int get_action_id(t_morphograph *x, short curr);
-
+static int get_num_digits(int n);
 static void append_svg_open(t_morphograph *x);
 //static void append_svg_txt(t_morphograph *x, char *line);
 static void append_svg_txt(t_morphograph *x, std::string linestr);
@@ -91,6 +91,7 @@ static void mgraph_cpp(t_morphograph *x);
 class ShapeWriter {
     t_morphograph *obj; //obj instead of x here
     Parameters *params;
+    bool firstpoint;
     int vecsize;
     float elem_width, elem_height, x, y, xdev, linewidth, trilen, yoffset, size;
     unsigned int bright, rotation; //make x a double???
@@ -119,6 +120,7 @@ public:
         bright = 0;
         linewidth = 0.5;
         drawstyle = 0; //0=stroke 1=fill 2=both
+        firstpoint = true;
         
     }
     
@@ -130,14 +132,14 @@ public:
     
     void draw(){
         
-        float baseline_scalar = 5;
+        float baseline_scalar = 15;
         //default strings for filewriter
         float tx = (x / float(vecsize)) * float(params->width);
         float ty = y * params->height;
 
-        float aw = elem_width + (baseline_scalar * size);   //actual width
+        float aw = baseline_scalar * elem_width * size;   //actual width
         float hwn = -1. * (aw / 2.);    //half width negative
-        float ah = elem_height + (baseline_scalar * size);  //actual height
+        float ah = baseline_scalar * elem_height * size;  //actual height
         float hhn = -1. * (ah / 2.);    //half height negative
         
         ws = std::to_string(aw);
@@ -149,25 +151,33 @@ public:
          
         lws = std::to_string(linewidth);
         bs = std::to_string(bright);
-        
+                
         // begin shape ------------------------------------------------
         linestr = "<"; //open
         
         if(shape == std::string("circles")){
             draw_circle();
+            //set_transform(offset_x, offset_y);
         }
         if(shape == std::string("rectangles")){
             draw_rectangle();
+            set_transform(offset_x, offset_y);
         }
         if(shape == std::string("ellipses")){
             draw_ellipse();
+            set_transform(offset_x, offset_y);
         }
         if(shape == std::string("letters")){
             draw_letter();
+            
         }
         if(shape == std::string("triangles")){
             //object_error((t_object *)x, "triangle is not implemented.");
             draw_triangle();
+            set_transform(offset_x, offset_y);
+        }
+        if(shape == std::string("linegraph")){
+            draw_linepoint();
         }
         
         //this should be part of a group soon  <g><>...</g>
@@ -184,17 +194,6 @@ public:
                 linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
                 break;
         }
-        
-        //transform characteristics
-        std::string rstr = std::to_string(rotation);
-        //std::string sc = std::to_string(size * 8.);
-        
-        linestr.append("transform=\""); //--------------------------
-        linestr.append("translate(" + xs + " " + ys + ") ");
-        //linestr.append("rotate(" + rstr + ", 50, 50) "); //2nd and 3rd args are in percentage
-        linestr.append("rotate(" + rstr + ") ");
-        linestr.append("translate(" + offset_x + " " + offset_y + ")");
-        linestr.append("\""); //-------------------------------------
         
         // append linestring text to doc
         append_svg_txt(obj, linestr);
@@ -275,24 +274,59 @@ public:
     
 private:
 
+    void set_transform(std::string ox, std::string oy){
+        //transform characteristics
+        std::string rstr = std::to_string(rotation);
+        //std::string sc = std::to_string(size * 8.);
+        
+        linestr.append("transform=\""); //--------------------------
+        linestr.append("translate(" + xs + " " + ys + ") ");
+        //linestr.append("rotate(" + rstr + ", 50, 50) "); //2nd and 3rd args are in percentage
+        linestr.append("rotate(" + rstr + ") ");
+        linestr.append("translate(" + ox + " " + oy + ")");
+        linestr.append("\" "); //-------------------------------------
+    }
+    
     void draw_triangle(){
+        //linestr.append("polygon points=\"x, y x, y x, y\"");
+        //aw is width / ah is height
+        //hwn is half width neg / hhn is half height neg
+        //tx ty
+        linestr.append("polygon points=\"x, y x, y x, y\"");
     }
     
     void draw_circle(){
         //note that circles are drawn via their center point by default
-        //linestr.append("circle cx=\"" + xs + "\" cy=\"" + ys + "\" r=\"0.5\" ");
-        linestr.append("circle r=\"0.5\"");
+        //hs = std::to_string(size / 2);
+        std::string ts = std::to_string((size * 8));
+        linestr.append("circle cx=\"" + xs + "\" cy=\"" + ys + "\" r=\"" + ts + "\" ");
+        //linestr.append("circle r=\"" + hs + "\" ");
     }
 
     void draw_rectangle(){
         //Rectangle(pPoint, width, height);
-        linestr.append("rect width=\"" + ws + "\" height=\"" + hs + "\" " );
+        linestr.append("rect width=\"" + ws + "\" height=\"" + hs + "\" ");
       //  linestr.append("rect x=\"" + xs + "\" y=\"" + ys + "\" width=\"" + ws + "\" height=\"" + hs + "\" ");
     }
     
     void draw_ellipse(){
         linestr.append("ellipse rx=\"" + ws + "\" ry=\"" + hs + "\" ");
         //linestr.append("ellipse ");
+    }
+    
+    void draw_linepoint(){
+        //single point to connect bpf
+        // M initialX initialY
+        // L linetoX linetoY linetoX linetoX etc
+        //https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+        if(firstpoint){
+            linestr.append("path \"M " + xs + ", " + ys + " L ");
+            firstpoint = false;
+        }else{
+            //linestr.append("M x y L x y x y x y");
+            linestr.append(xs + ", " + ys + " ");
+        }
+        
     }
     
     void draw_letter(){
@@ -845,6 +879,19 @@ static int get_action_id(t_morphograph *x, short curr) {
     return -1;
 }
 
+//study this ???
+long get_num_digits(long n){
+    int min = 1;
+    int max = 4096;
+    
+    if(n < 0)
+        return get_num_digits((n == min) ? max: -n);
+    if (n < 10)
+        return 1;
+    return 1 + get_num_digits(n / 10);
+}
+
+
 //run the cpp portion of the morphograph; assumes setup has completed
 static void mgraph_cpp(t_morphograph *x) {
 
@@ -867,14 +914,15 @@ static void mgraph_cpp(t_morphograph *x) {
         //    graph.add_layer(atom_getsym(x->l_shapes[i])->s_name);
         //}
         
-        object_post((t_object *)x, "///////// Finished processing /////////");
+        object_post((t_object *)x, "///////// Finished processing");
         outlet_bang(x->l_outlet_1);
     
+        //once processing is finished, attempt to write the file
         if(x->l_filepath && x->l_fnamesvg){
             
             t_symbol *fp;
             
-            char full_file_path[strlen(x->l_filepath->s_name) + strlen(x->l_fnamesvg->s_name)];
+            char full_file_path[strlen(x->l_filepath->s_name) + strlen(x->l_fnamesvg->s_name) + 1];
             strcpy(full_file_path, x->l_filepath->s_name);
             strcat(full_file_path, x->l_fnamesvg->s_name);
             
@@ -882,6 +930,8 @@ static void mgraph_cpp(t_morphograph *x) {
             
             morphograph_write(x, fp);
             morphograph_load(x, fp);
+            
+           
         }else{
             object_error((t_object *)x, "cannot load svg file; please check filepath/filename");
         }
@@ -902,6 +952,11 @@ static void mgraph_cpp(t_morphograph *x) {
 
 void morphograph_dictionary(t_morphograph *x, t_symbol *s){
     
+    //reset globals
+    x->l_fnamesvg = NULL;
+    x->l_shape = NULL;
+    x->l_style = NULL;
+    
     t_dictionary *d = dictobj_findregistered_retain(s);
     t_symbol *tfilename, *tshape, *tstyle;
     short criteria = 0;
@@ -913,42 +968,47 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s){
     
     //filename to be written to disk as SVG file
     //maybe check to make sure about extension ???
+    //maybe take out criteria eval here ???
     if(dictionary_hasentry(d, filename)){
         dictionary_getsym(d, filename, &tfilename);
         //object_post((t_object *)x, "dict in: filename: %s", tfilename->s_name);
-        criteria++;
         x->l_fnamesvg = tfilename;
+    }else{
+        object_error((t_object *)x, "dict: no entry found for filename.  Aborting");
+        return;
     }
         
     //process shape (only one currently)
     if(dictionary_hasentry(d, shape)){
         dictionary_getsym(d, shape, &tshape);
         //object_post((t_object *)x, "dict in: shape: %s", tshape->s_name);
-        criteria++;
         x->l_shape = tshape;
+    }else{
+        object_error((t_object *)x, "dict: no entry found for shape.  Aborting.");
+        return;
     }
     
     if(dictionary_hasentry(d, style)){
         dictionary_getsym(d, style, &tstyle);
         //object_post((t_object *)x, "dict in: style: %s", tstyle->s_name);
-        criteria++;
         x->l_style = tstyle;
+    }else{
+        object_error((t_object *)x, "dict: no entry found for style.  Aborting.");
+        return;
     }
     
     if(dictionary_hasentry(d, descmap)){
         process_descmap(x, d);
-        criteria++;
+    }else{
+        object_error((t_object *)x, "dict: no entry found for descmap (sub-dict).  Aborting.");
+        return;
     }
      
     if(dictionary_hasentry(d, transform)){
+        object_post((t_object *)x, "dict debug: processing transform...");
         process_transform(x, d);
-        criteria++;
     }
-    
-    if(criteria != 5){
-        object_post((t_object *)x, "criteria not met!  Please check dictionary before processing morphograph.");
-    }
-    
+        
     dictobj_release(d);
 }
 
@@ -1029,6 +1089,9 @@ static void process_transform(t_morphograph *x, t_dictionary *d){
             dictionary_getlong(td, zoo, &z);
             x->l_params.zoom = (int)z;
         }
+        
+        object_post((t_object *)x, "pt params width: %d", x->l_params.width);
+        object_post((t_object *)x, "pt params height: %d", x->l_params.height);
     }
 }
 
@@ -1071,7 +1134,7 @@ static void populate_shapes(t_morphograph *x){
     x->l_shapes[0] = (char *)"circles";
     x->l_shapes[1] = (char *)"ellipses";
     x->l_shapes[2] = (char *)"rectangles";
-    x->l_shapes[3] = (char *)"lines";
+    x->l_shapes[3] = (char *)"linegraph";
     x->l_shapes[4] = (char *)"letters";
     x->l_shapes[5] = (char *)"triangles";
 }
@@ -1092,25 +1155,25 @@ static void post_info(void){
 static void post_options(t_morphograph *x){
     short i;
     
-    object_post((t_object *)x, "///////// Shapes /////////");
+    object_post((t_object *)x, "///////// Shapes");
     
     for(i = 0; i < NUM_SHAPES; i++){
         object_post((t_object *)x, "shape %d: %s", i, x->l_shapes[i]);
     }
 
-    object_post((t_object *)x, "///////// Spectral Featurelist /////////");
+    object_post((t_object *)x, "///////// Spectral Featurelist");
 
     for(i = 0; i < NUM_FEATURES; i++){
         object_post((t_object *)x, "feature %d: %s", i, x->l_features[i]);
     }
     
-    object_post((t_object *)x, "///////// Shape Actions /////////");
+    object_post((t_object *)x, "///////// Shape Actions");
     
     for(i = 0; i < NUM_ACTIONS; i++){
         object_post((t_object *)x, "action %d: %s", i, x->l_actions[i]);
     }
     
-    object_post((t_object *)x, "///////// Draw Styles /////////");
+    object_post((t_object *)x, "///////// Draw Styles");
     
     for(i = 0; i < NUM_STYLES; i++){
         object_post((t_object *)x, "style %d: %s", i, x->l_styles[i]);
@@ -1125,7 +1188,7 @@ static void post_mappings(t_morphograph *x){
         return;
     }
     
-    object_post((t_object *)x, "///////// Mappings /////////");
+    object_post((t_object *)x, "///////// Mappings");
 
     for(i = 0; i < x->l_mapcount; i++){
         object_post((t_object *)x, "mapping id-%d -> feature %s mapped to %s", i, x->l_chosen_features[i]->s_name, x->l_chosen_actions[i]->s_name);
@@ -1134,7 +1197,7 @@ static void post_mappings(t_morphograph *x){
 }
 
 static void post_parameters(t_morphograph *x){
-    object_post((t_object *)x, "///////// Analysis / SVG parameters /////////");
+    object_post((t_object *)x, "///////// Analysis / SVG parameters");
     object_post((t_object *)x, "sample rate: %f", x->l_params.sr);
     object_post((t_object *)x, "fft size: %d", x->l_params.fft_size);
     object_post((t_object *)x, "hop size: %d", x->l_params.hop_size);
@@ -1148,6 +1211,19 @@ void morphograph_process(t_morphograph *x) {
     if(!buffer_ref_exists(x->l_buffer_reference)){
         object_error((t_object *)x, "No buffer reference! Cannot complete descriptor mapping, aborting analysis.");
         return;
+    }else{
+        //do I need to free anything here???
+        //should I be trying to use my BufferInstance later on instead of this check?
+        t_buffer_info info;
+        t_buffer_obj *obj;
+        
+        obj = buffer_ref_getobject(x->l_buffer_reference);
+        buffer_getinfo(obj, &info);
+        
+        if(info.b_frames == 0){
+            object_error((t_object *)x, "Buffer in use has zero samples.  Aborting.");
+            return;
+        }
     }
     
     if(!x->l_filepath){
@@ -1156,11 +1232,11 @@ void morphograph_process(t_morphograph *x) {
     }
     
     if(!x->l_fnamesvg){
-        object_error((t_object *)x, "No valid filename, which may also indicate that a mapping dictionary hasn't been sent.  Aborting.");
+        object_error((t_object *)x, "No valid filename, which may indicate that a mapping dictionary hasn't been sent.  Aborting.");
         return;
     }
  
-    object_post((t_object *)x, "Processing morphograph...");
+    object_post((t_object *)x, "///////// Processing morphograph...");
     //maybe instead of calling this here, we could give this function an arg for the dictionary
     //to use to parse shapelayer mapping definitions... it could go above dictionary_getkeys()
     mgraph_cpp(x);
@@ -1255,7 +1331,7 @@ void morphograph_mapping_post(t_morphograph *x){
 }
 */
 
-//need this for buffer notification
+//need this for internal buffer reference updating (if buffers change etc)
 t_max_err morphograph_notify(t_morphograph *x, t_symbol *s, t_symbol *msg, void *sender, void *data) {
     return buffer_ref_notify(x->l_buffer_reference, s, msg, sender, data);
 }
@@ -1319,12 +1395,12 @@ void morphograph_load(t_morphograph *x, t_symbol *s){
     }
 }
 
-void morphograph_size(t_morphograph *x, long width, long height) {
-    t_size size;
-    size.width = (double) width;
-    size.height = (double) height;
-    jbox_set_size((t_object *) x, &size);
-}
+//void morphograph_size(t_morphograph *x, long width, long height) {
+//    t_size size;
+//    size.width = (double) width;
+//    size.height = (double) height;
+//    jbox_set_size((t_object *) x, &size);
+//}
 
 void morphograph_paint(t_morphograph *x, t_object *patcherview) {
     t_rect rect; //helper to gain info about patcherview
@@ -1332,21 +1408,20 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
     t_jgraphics *g = (t_jgraphics *)patcherview_get_jgraphics(patcherview);     // Get the graphics context.
 
     if(x && x->l_svg){
-        t_rect newrect;
-        
+        t_jrgba bg = x->l_background;;
         double sw, sh;
     
-        jgraphics_scale(g, rect.width, rect.height);
-        //jgraphics_set_line_width(g, .04);
-        jsvg_get_size(x->l_svg, &sw, &sh);
-        jgraphics_scale(g, 1./sw, 1./sh);
-
-//        newrect.x = rect.x;
-//        newrect.y = rect.y;
-//        newrect.width = sw;
-//        newrect.height = sh;
-//        jbox_set_rect_for_view((t_object *)x, patcherview, &newrect);
+        jgraphics_set_source_rgba(g, bg.red, bg.green, bg.blue, bg.alpha);
+        jgraphics_rectangle(g, 0, 0, rect.width, rect.height);
+        jgraphics_fill(g);
         
+        jgraphics_scale(g, rect.width, rect.height);
+        jsvg_get_size(x->l_svg, &sw, &sh);
+        
+        object_post((t_object *)x, "svg width: %f", sw);
+        object_post((t_object *)x, "svg height: %f", sh);
+        
+        jgraphics_scale(g, 1./sw, 1./sh);
         jsvg_render(x->l_svg, g);
         
     }else{
@@ -1358,8 +1433,6 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
         color_bg.red = 0.064286; color_bg.green = 0.315738; color_bg.blue = 0.364286; color_bg.alpha = 1.;
         color_rr.red = 0.217857; color_rr.green = 0.492961; color_rr.blue = 0.496429; color_rr.alpha = 1.;
 
-        
-        
         jgraphics_set_source_jrgba(g, &color_bg);
         jgraphics_rectangle(g, 0, 0, rect.width, rect.height);
         jgraphics_fill(g);
@@ -1368,11 +1441,7 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
         jgraphics_rectangle_rounded(g, offset2, offset2, rect.width - offset2*2, rect.height - offset2*2, 30, 30);
         jgraphics_fill(g);
     }
-
-
 }
-
-
 
 //-------------------------------------------------------------------------------------------------
 //c functions: std max api
@@ -1386,8 +1455,22 @@ void append_svg_open(t_morphograph *x){
     x->l_svgh = sysmem_newhandle(0);
 
     //needs to grab dims from struct parameters
-    char *root = (char *)"<svg version=\"1.1\" width=\"600\" height=\"400\" xmlns=\"http://www.w3.org/2000/svg\">\n";
-    my_sysmem_appendtextptrtohand(root, x->l_svgh);
+    char *root1 = (char *)"<svg version=\"1.1\" width=\"";
+    my_sysmem_appendtextptrtohand(root1, x->l_svgh);
+    
+    char wid[get_num_digits(x->l_params.width)];
+    sprintf(wid, "%ld", x->l_params.width);
+    my_sysmem_appendtextptrtohand(wid, x->l_svgh);
+    
+    char *root2 = (char *)"\" height=\"";
+    my_sysmem_appendtextptrtohand(root2, x->l_svgh);
+    
+    char hei[get_num_digits(x->l_params.height)];
+    sprintf(hei, "%ld", x->l_params.height);
+    my_sysmem_appendtextptrtohand(hei, x->l_svgh);
+    
+    char *root3 = (char *)"\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+    my_sysmem_appendtextptrtohand(root3, x->l_svgh);
 }
 
 //void append_svg_txt(t_morphograph *x, char *line){
@@ -1448,7 +1531,7 @@ void morphograph_writefile(t_morphograph *x, char *filename, short path){
 
 //does nothing atm
 void morphograph_anything(t_morphograph *x, const t_symbol * const s, const long ac, const t_atom *av){
-    
+
 }
 
 void morphograph_bang(t_morphograph *x){
@@ -1528,7 +1611,8 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
     
         x->l_shape = NULL;
         x->l_svg = NULL;
-        x->l_svgh = NULL;
+        x->l_svgh = NULL; //svg t_handle
+        x->l_style = NULL;
         //x->hash_table = (t_hashtab *)hashtab_new(0);
         
         //fill UI option arrays for max window
@@ -1554,8 +1638,6 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         
         attr_dictionary_process(x,d);
         jbox_ready(&x->l_box);
-        
-        
         
 //        if(attrstart){
 //            object_attr_setvalueof(x, gensym("keys"), attrstart, argv);
@@ -1585,7 +1667,7 @@ void ext_main(void *r) {
     
     //register custom user methods
     class_addmethod(c, (method)morphograph_set, "set", A_SYM, 0);
-    class_addmethod(c, (method)morphograph_size, "size", A_LONG, A_LONG, 0);
+    //class_addmethod(c, (method)morphograph_size, "size", A_LONG, A_LONG, 0);
     class_addmethod(c, (method)morphograph_set_path, "set_path", A_SYM, 0);
     class_addmethod(c, (method)morphograph_dictionary, "dictionary", A_SYM, 0);
     class_addmethod(c, (method)morphograph_load, "load", A_DEFSYM, 0); //default sym; empty string???
@@ -1607,41 +1689,49 @@ void ext_main(void *r) {
     CLASS_ATTR_LABEL(c, "verbose", 0, "Verbose Mode");
     CLASS_ATTR_DEFAULTNAME_SAVE(c, "verbose", 0, "0");
     
+    
+    //color attrs
+    
+    CLASS_STICKY_ATTR(c, "category", 0, "Appearance");
+    CLASS_ATTR_RGBA(c, "bgcolor", 0, t_morphograph, l_background);
+    CLASS_ATTR_DEFAULTNAME_SAVE_PAINT(c, "bgcolor", 0, "0. 0. 0. 1.");
+    CLASS_ATTR_STYLE_LABEL(c, "bgcolor", 0, "rgba", "Background Color");
+    
     //morphograph specific attr declarations
     
     CLASS_STICKY_ATTR(c, "category", 0, "Analysis");
     
     CLASS_ATTR_DOUBLE(c, "p_samplerate", 0, t_morphograph, l_params.sr);
     CLASS_ATTR_LABEL(c, "p_samplerate", 0, "Analysis Sample Rate");
-    //CLASS_ATTR_ORDER(c, "p_samplerate", 0, "1");
+    CLASS_ATTR_ORDER(c, "p_samplerate", 0, "1");
     CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_samplerate", 0, "44100.0");
     
     CLASS_ATTR_LONG(c, "p_fftsize", 0, t_morphograph, l_params.fft_size);
     CLASS_ATTR_LABEL(c, "p_fftsize", 0, "Analysis FFT Size");
-    //CLASS_ATTR_ORDER(c, "p_fftsize", 0, "2");
+    CLASS_ATTR_ORDER(c, "p_fftsize", 0, "2");
     CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_fftsize", 0, "4096");
     
     CLASS_ATTR_LONG(c, "p_hopsize", 0, t_morphograph, l_params.hop_size);
     CLASS_ATTR_LABEL(c, "p_hopsize", 0, "Analysis Hop Size");
-    //CLASS_ATTR_ORDER(c, "p_hopsize", 0, "3");
+    CLASS_ATTR_ORDER(c, "p_hopsize", 0, "3");
     CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_hopsize", 0, "512");
 
-    CLASS_STICKY_ATTR(c, "category", 0, "SVG output");
+    CLASS_STICKY_ATTR(c, "category", 0, "SVG");
 
     CLASS_ATTR_LONG(c, "p_width", 0, t_morphograph, l_params.width);
     CLASS_ATTR_LABEL(c, "p_width", 0, "SVG width in pixels");
-    //CLASS_ATTR_ORDER(c, "p_hopsize", 0, "3");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_hopsize", 0, "512");
+    CLASS_ATTR_ORDER(c, "p_width", 0, "1");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_width", 0, "600");
     
     CLASS_ATTR_LONG(c, "p_height", 0, t_morphograph, l_params.height);
     CLASS_ATTR_LABEL(c, "p_height", 0, "SVG height in pixels");
-    //CLASS_ATTR_ORDER(c, "p_hopsize", 0, "3");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_hopsize", 0, "512");
+    CLASS_ATTR_ORDER(c, "p_height", 0, "2");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_height", 0, "400");
 
     CLASS_ATTR_LONG(c, "p_zoom", 0, t_morphograph, l_params.zoom);
     CLASS_ATTR_LABEL(c, "p_zoom", 0, "SVG zoom factor");
-    //CLASS_ATTR_ORDER(c, "p_hopsize", 0, "3");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_hopsize", 0, "512");
+    CLASS_ATTR_ORDER(c, "p_zoom", 0, "3");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_zoom", 0, "1");
 
     
     CLASS_STICKY_ATTR_CLEAR(c, "category");
