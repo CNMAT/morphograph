@@ -51,6 +51,8 @@ typedef struct _morphograph {
     t_jbox l_box;
     //t_critical lock;
     t_jsvg *l_svg;
+    t_jrgba l_background;
+    
     t_symbol *l_shape;
     t_symbol *l_style;
     t_symbol *l_filepath;                //path for svg file and sample dir
