@@ -91,12 +91,11 @@ static void mgraph_cpp(t_morphograph *x);
 class ShapeWriter {
     t_morphograph *obj; //obj instead of x here
     Parameters *params;
-    bool firstpoint;
     int vecsize;
     float elem_width, elem_height, x, y, xdev, linewidth, trilen, yoffset, size;
     unsigned int bright, rotation; //make x a double???
     unsigned short drawstyle;
-    std::string linestr, bs, shape, xs, ys, ws, hs, xos, yos, lws;
+    std::string linestr, bs, shape, xs, ys, ws, hs, xos, yos, lws, offset_x, offset_y;
     
     
 private:
@@ -120,7 +119,6 @@ public:
         bright = 0;
         linewidth = 0.5;
         drawstyle = 0; //0=stroke 1=fill 2=both
-        firstpoint = true;
         
     }
     
@@ -130,31 +128,79 @@ public:
         //could be a memory leak here
     }
     
-    void draw(){
+    void begin_shape(){
+            
+        if(shape==std::string("linegraph")){
+            linestr = "<"; //open
+            //default strings for filewriter
+            float tx = (x / float(vecsize)) * float(params->width);
+            float ty = params->height;
+            object_post((t_object *)obj, "ty is: %f", ty);
+            calc_position_info(tx, ty);
+            
+            linestr.append("path d=\"M " + xs + " " + ys + " ");
+        }
         
+    }
+    
+    void eval_drawstyle(){
+        switch(drawstyle){
+            case 0: //stroke; consider stroke width
+                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + lws + "\" ");
+                linestr.append("fill=\"transparent\" ");
+                break;
+            case 1: //fill
+                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
+                break;
+            case 2: //both
+                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" "); //should be [linewidth]
+                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
+                break;
+        }
+    }
+    
+    void calc_position_info(float tx, float ty){
+      
         float baseline_scalar = 15;
-        //default strings for filewriter
-        float tx = (x / float(vecsize)) * float(params->width);
-        float ty = y * params->height;
-
         float aw = baseline_scalar * elem_width * size;   //actual width
         float hwn = -1. * (aw / 2.);    //half width negative
         float ah = baseline_scalar * elem_height * size;  //actual height
         float hhn = -1. * (ah / 2.);    //half height negative
         
         ws = std::to_string(aw);
-        std::string offset_x = std::to_string(hwn);
+        offset_x = std::to_string(hwn);
         hs = std::to_string(ah);
-        std::string offset_y = std::to_string(hhn);
+        offset_y = std::to_string(hhn);
         xs = std::to_string(tx);
         ys = std::to_string(ty);
-         
+
+    }
+    
+    void draw(){
+
         lws = std::to_string(linewidth);
         bs = std::to_string(bright);
-                
-        // begin shape ------------------------------------------------
-        linestr = "<"; //open
+
+        float tx = (x / float(vecsize)) * float(params->width);
+        float ty = (1.0 - y) * params->height;
+
+        calc_position_info(tx, ty);
+
+        if(shape == std::string("linegraph")){
+            draw_linepoint();
+            return;
+        }
+
+        linestr.append("<"); //open
         
+        if(shape == std::string("letters")){
+            draw_letter();
+            return;
+        }
+        
+        //otherwise, normal operations...
+        
+        //take out circle ???
         if(shape == std::string("circles")){
             draw_circle();
             //set_transform(offset_x, offset_y);
@@ -167,55 +213,29 @@ public:
             draw_ellipse();
             set_transform(offset_x, offset_y);
         }
-        if(shape == std::string("letters")){
-            draw_letter();
-            
-        }
         if(shape == std::string("triangles")){
             //object_error((t_object *)x, "triangle is not implemented.");
             draw_triangle();
             set_transform(offset_x, offset_y);
         }
-        if(shape == std::string("linegraph")){
-            draw_linepoint();
-        }
-        
         //this should be part of a group soon  <g><>...</g>
-        switch(drawstyle){
-            case 0: //stroke; consider stroke width
-               	linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + lws + "\" ");
-                linestr.append("fill=\"transparent\" ");
-                break;
-            case 1: //fill
-                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
-                break;
-            case 2: //both
-                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" "); //should be [linewidth]
-                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
-                break;
+        eval_drawstyle();
+        linestr.append("/>\n"); //close
+        
+    }
+    
+    void end_shape(){
+        // append linestring text to doc
+        
+        if(shape == std::string("linegraph")){
+            linestr.append("\" ");
+            linestr.append("stroke=\"black\" fill=\"transparent\"");
+            //eval_drawstyle();
+        
         }
         
-        // append linestring text to doc
         append_svg_txt(obj, linestr);
-        
-        // end shape ------------------------------------------------
         append_svg_txt(obj, "/>\n"); //close
-        
-        //lines should be brought back in via a max attribute
-        /*
-        // test lines -------------------------------------------------
-        std::string tempwidth = std::to_string(params->width);
-        std::string tempheight = std::to_string(params->height);
-        
-        linestr = "<line x1=\"" + xs + "\" ";
-        linestr.append("y1=\"0\" ");
-        //linestr.append("y1=\"" + tempheight);
-        linestr.append("x2=\"" + xs + "\" ");
-        //linestr.append("y2=\"0\" ");
-        linestr.append("y2=\"" + tempheight + "\" ");
-        linestr.append("stroke-width=\"" + ls + "\" stroke=\"black\"/>\n");
-        append_svg_txt(obj, linestr);
-         */
 
     }
     
@@ -268,20 +288,14 @@ public:
             drawstyle = 2;
         }
     }
-    void set_drawlines(bool _t){
-        
-    }
     
 private:
 
     void set_transform(std::string ox, std::string oy){
         //transform characteristics
         std::string rstr = std::to_string(rotation);
-        //std::string sc = std::to_string(size * 8.);
-        
         linestr.append("transform=\""); //--------------------------
         linestr.append("translate(" + xs + " " + ys + ") ");
-        //linestr.append("rotate(" + rstr + ", 50, 50) "); //2nd and 3rd args are in percentage
         linestr.append("rotate(" + rstr + ") ");
         linestr.append("translate(" + ox + " " + oy + ")");
         linestr.append("\" "); //-------------------------------------
@@ -297,46 +311,44 @@ private:
     
     void draw_circle(){
         //note that circles are drawn via their center point by default
-        //hs = std::to_string(size / 2);
         std::string ts = std::to_string((size * 8));
         linestr.append("circle cx=\"" + xs + "\" cy=\"" + ys + "\" r=\"" + ts + "\" ");
-        //linestr.append("circle r=\"" + hs + "\" ");
     }
 
     void draw_rectangle(){
-        //Rectangle(pPoint, width, height);
         linestr.append("rect width=\"" + ws + "\" height=\"" + hs + "\" ");
-      //  linestr.append("rect x=\"" + xs + "\" y=\"" + ys + "\" width=\"" + ws + "\" height=\"" + hs + "\" ");
     }
     
     void draw_ellipse(){
         linestr.append("ellipse rx=\"" + ws + "\" ry=\"" + hs + "\" ");
-        //linestr.append("ellipse ");
     }
     
     void draw_linepoint(){
-        //single point to connect bpf
-        // M initialX initialY
-        // L linetoX linetoY linetoX linetoX etc
         //https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
-        if(firstpoint){
-            linestr.append("path \"M " + xs + ", " + ys + " L ");
-            firstpoint = false;
-        }else{
-            //linestr.append("M x y L x y x y x y");
-            linestr.append(xs + ", " + ys + " ");
-        }
-        
+        linestr.append("L " + xs + " " + ys + " ");
     }
     
     void draw_letter(){
         int l = rand() % 26;
         char ls = 'a';
-   //     std::stringstream lss;
-       //lss << (char)(ls + l);
-        //std::cout << lss.str() << std::endl;
+        char the_char = (char)(ls + l);
+        
+        linestr.append(
+            "text x=\"" + xs + "\" y=\"" + ys + "\" " + "font-family=\"Arial\" font-size=\"" +
+            std::to_string(int((size * params->height) / 16)) + "\""
+        );
+        
+       // set_transform(offset_x, offset_y);
+        
+        linestr.append(
+            ">" +
+            std::to_string(the_char) + "</text>\n"
+        );
+        
         switch(drawstyle){
             case 0://stroke
+               
+                
 //                (*doc) << Text(
 //                    pPoint(x / vecsize * params->width, y * params->height),
 //                    lss.str(), Fill(),
@@ -414,6 +426,7 @@ public:
         
         //find the layer with the largest list for energy
         int max_frames = 0;
+        
         for (unsigned i = 0; i < layers.size(); ++i) {
             if (max_frames < layers[i].desc.energy.size()) {
                 max_frames = layers[i].desc.energy.size();
@@ -450,14 +463,24 @@ public:
             //this should be a parameter to thin the data out...
             unsigned skip_by = 2;
             
+            ShapeWriter swrite(x, layers[i].shape);
+            swrite.set_params(&params);
+            swrite.set_drawstyle(x->l_style->s_name);
+            swrite.set_vecsize(vsize);
+            
+
+            swrite.begin_shape();
+            
             for (unsigned j = 0; j < vsize; j += skip_by) {
+                
+                //swrite.set_idx(j); //i is layer, j is analysis frame
+                swrite.set_x(float(j));
+
+                object_post((t_object *)x, "x location: %d", j);
                 
                 double sc_freq = (layers[i].desc.speccentr[j] / (max_freq - min_freq)) + min_freq;
                 double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
 
-                ShapeWriter swrite(x, layers[i].shape);
-                
-                                                
                 for(int k = 0; k < x->l_mapcount; k++){
                     // j is the frame
                     double curr_feature_datum;
@@ -530,7 +553,7 @@ public:
                             swrite.set_size(curr_feature_datum);
                         } break;
                         case PARAM_YLOC: {
-                            //object_post((t_object *)x, "detected yloc; curr feature data: %f", curr_feature_datum);
+                            object_post((t_object *)x, "detected yloc; curr feature data: %f", curr_feature_datum);
                             
                             swrite.set_y(curr_feature_datum);
                         } break;
@@ -556,14 +579,11 @@ public:
                     }
                 }
                 
-                swrite.set_drawstyle(x->l_style->s_name);
-                swrite.set_vecsize(vsize);
-                //swrite.set_idx(j); //i is layer, j is analysis frame
-                swrite.set_x(float(j));
-                swrite.set_params(&params);
+                
                 swrite.draw();
         
             }
+            swrite.end_shape();
         }
         append_svg_close(x);
         //do something here to call write()
@@ -715,7 +735,7 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
     int ptr = 0;
     bool feature_valid = true;
     
-    while (ptr < nsamps && feature_valid) {
+    while ((ptr < nsamps) && feature_valid) {
         if (p.fft_size + ptr > nsamps) break; // discard incomplete frame
 
         //run fft()
