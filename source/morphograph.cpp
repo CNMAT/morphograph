@@ -128,21 +128,6 @@ public:
         //could be a memory leak here
     }
     
-    void begin_shape(){
-            
-        if(shape==std::string("linegraph")){
-            linestr = "<"; //open
-            //default strings for filewriter
-            float tx = (x / float(vecsize)) * float(params->width);
-            float ty = params->height;
-            object_post((t_object *)obj, "ty is: %f", ty);
-            calc_position_info(tx, ty);
-            
-            linestr.append("path d=\"M " + xs + " " + ys + " ");
-        }
-        
-    }
-    
     void eval_drawstyle(){
         switch(drawstyle){
             case 0: //stroke; consider stroke width
@@ -174,6 +159,22 @@ public:
         xs = std::to_string(tx);
         ys = std::to_string(ty);
 
+    }
+    
+    void draw_init(){
+        //any drawing initialization should happen here
+        
+        if(shape==std::string("linegraph")){
+            linestr = "<"; //open
+            //default strings for filewriter
+            float tx = (x / float(vecsize)) * float(params->width);
+            float ty = params->height;
+            object_post((t_object *)obj, "ty is: %f", ty);
+            calc_position_info(tx, ty);
+            
+            linestr.append("path d=\"M " + xs + " " + ys + " ");
+        }
+        
     }
     
     void draw(){
@@ -456,7 +457,7 @@ public:
         for (unsigned i = 0; i < layers.size(); ++i) {
             //how do we know that energy's size is the size of a vector???
             //need to look into this
-            long vsize = layers[i].desc.energy.size();
+            long vsize = layers[i].desc.energy.size() / 2;
             
             //j represents the analysis frame
             //why do we need to skip analysis frames?
@@ -468,8 +469,7 @@ public:
             swrite.set_drawstyle(x->l_style->s_name);
             swrite.set_vecsize(vsize);
             
-
-            swrite.begin_shape();
+            swrite.draw_init();
             
             for (unsigned j = 0; j < vsize; j += skip_by) {
                 
