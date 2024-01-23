@@ -128,43 +128,11 @@ public:
         //could be a memory leak here
     }
     
-    void eval_drawstyle(){
-        switch(drawstyle){
-            case 0: //stroke; consider stroke width
-                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + lws + "\" ");
-                linestr.append("fill=\"transparent\" ");
-                break;
-            case 1: //fill
-                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
-                break;
-            case 2: //both
-                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" "); //should be [linewidth]
-                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\" ");
-                break;
-        }
-    }
-    
-    void calc_position_info(float tx, float ty){
-      
-        float baseline_scalar = 15;
-        float aw = baseline_scalar * elem_width * size;   //actual width
-        float hwn = -1. * (aw / 2.);    //half width negative
-        float ah = baseline_scalar * elem_height * size;  //actual height
-        float hhn = -1. * (ah / 2.);    //half height negative
-        
-        ws = std::to_string(aw);
-        offset_x = std::to_string(hwn);
-        hs = std::to_string(ah);
-        offset_y = std::to_string(hhn);
-        xs = std::to_string(tx);
-        ys = std::to_string(ty);
-
-    }
-    
     void draw_init(){
         //any drawing initialization should happen here
+    
         
-        if(shape==std::string("linegraph")){
+        if(shape == std::string("linegraph")){
             linestr = "<"; //open
             //default strings for filewriter
             float tx = (x / float(vecsize)) * float(params->width);
@@ -178,10 +146,9 @@ public:
     }
     
     void draw(){
-
         lws = std::to_string(linewidth);
         bs = std::to_string(bright);
-
+        
         float tx = (x / float(vecsize)) * float(params->width);
         float ty = (1.0 - y) * params->height;
 
@@ -292,6 +259,38 @@ public:
     
 private:
 
+    void eval_drawstyle(){
+        switch(drawstyle){
+            case 0: //stroke; consider stroke width
+                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + lws + "\"");
+                linestr.append("fill=\"transparent\" ");
+                break;
+            case 1: //fill
+                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\"");
+                break;
+            case 2: //both
+                linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"0.2\" "); //should be [linewidth]
+                linestr.append("fill=\"rgb(" + bs + "," + bs + "," + bs + ")\"");
+                break;
+        }
+    }
+    
+    void calc_position_info(float tx, float ty){
+      
+        float baseline_scalar = 15;
+        float aw = baseline_scalar * elem_width * size;   //actual width
+        float hwn = -1. * (aw / 2.);    //half width negative
+        float ah = baseline_scalar * elem_height * size;  //actual height
+        float hhn = -1. * (ah / 2.);    //half height negative
+        
+        ws = std::to_string(aw);
+        offset_x = std::to_string(hwn);
+        hs = std::to_string(ah);
+        offset_y = std::to_string(hhn);
+        xs = std::to_string(tx);
+        ys = std::to_string(ty);
+
+    }
     void set_transform(std::string ox, std::string oy){
         //transform characteristics
         std::string rstr = std::to_string(rotation);
@@ -332,54 +331,16 @@ private:
     void draw_letter(){
         int l = rand() % 26;
         char ls = 'a';
-        char the_char = (char)(ls + l);
+        std::string letter{(char)(ls + l)};
         
         linestr.append(
             "text x=\"" + xs + "\" y=\"" + ys + "\" " + "font-family=\"Arial\" font-size=\"" +
-            std::to_string(int((size * params->height) / 16)) + "\""
+            std::to_string(int((size * params->height) / 16)) + "px\" "
         );
         
-       // set_transform(offset_x, offset_y);
+        eval_drawstyle();
         
-        linestr.append(
-            ">" +
-            std::to_string(the_char) + "</text>\n"
-        );
-        
-        switch(drawstyle){
-            case 0://stroke
-               
-                
-//                (*doc) << Text(
-//                    pPoint(x / vecsize * params->width, y * params->height),
-//                    lss.str(), Fill(),
-//                    Font((size * params->height) / 16, "Verdana"),
-//                    Stroke(linewidth, Color(0, 0, 0))
-//                );
-                break;
-            case 1://fill
-//                (*doc) << Text(
-//                    pPoint(x / vecsize * params->width, y * params->height),
-//                    lss.str(), Color(bright, bright, bright),
-//                    Font((size * params->height) / 16, "Verdana")
-//                );
-                break;
-            case 2://both
-//                (*doc) << Text(
-//                    pPoint(x / vecsize * params->width, y * params->height),
-//                    lss.str(), Color(bright, bright, bright),
-//                    Font((size * params->height) / 16, "Verdana"),
-//                    Stroke(linewidth, Color(0, 0, 0))
-//                );
-                break;
-            default:
-//                (*doc) << Text(
-//                    pPoint(x / vecsize * params->width, y * params->height),
-//                    lss.str(), Color(bright, bright, bright),
-//                    Font((size * params->height) / 16, "Verdana")
-//                );
-                break;
-        }
+        linestr.append(">" + letter + "</text>\n");
     }
 };
 
@@ -473,7 +434,7 @@ public:
                 //swrite.set_idx(j); //i is layer, j is analysis frame
                 swrite.set_x(float(j));
 
-                object_post((t_object *)x, "x location: %d", j);
+                //object_post((t_object *)x, "x location: %d", j);
                 
                 double sc_freq = (layers[i].desc.speccentr[j] / (max_freq - min_freq)) + min_freq;
                 double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
@@ -550,9 +511,8 @@ public:
                             swrite.set_size(curr_feature_datum);
                         } break;
                         case PARAM_YLOC: {
-                            object_post((t_object *)x, "detected yloc; curr feature data: %f", curr_feature_datum);
-                            
                             swrite.set_y(curr_feature_datum);
+                            //object_post((t_object *)x, "detected ylocation: curr feature data: %f", curr_feature_datum);
                         } break;
 //                        case PARAM_XDEV: {
 //                            //unimplemented
