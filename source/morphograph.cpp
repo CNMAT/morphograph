@@ -455,12 +455,9 @@ public:
 
         //draw all elements after calculating relevant data
         for (unsigned i = 0; i < layers.size(); ++i) {
-            //how do we know that energy's size is the size of a vector???
-            //need to look into this
             long vsize = layers[i].desc.energy.size() / 2;
             
             //j represents the analysis frame
-            //why do we need to skip analysis frames?
             //this should be a parameter to thin the data out...
             unsigned skip_by = 2;
             
@@ -471,7 +468,7 @@ public:
             
             swrite.draw_init();
             
-            for (unsigned j = 0; j < vsize; j += skip_by) {
+            for (unsigned j = 0; j < vsize; j += x->coarseness) {
                 
                 //swrite.set_idx(j); //i is layer, j is analysis frame
                 swrite.set_x(float(j));
@@ -1628,6 +1625,7 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         x->l_fnamesvg = NULL;
         x->l_buffer_reference = NULL;
         x->verbose = false;
+        x->coarseness = 2;
     
         x->l_shape = NULL;
         x->l_svg = NULL;
@@ -1709,6 +1707,11 @@ void ext_main(void *r) {
     CLASS_ATTR_LABEL(c, "verbose", 0, "Verbose Mode");
     CLASS_ATTR_DEFAULTNAME_SAVE(c, "verbose", 0, "0");
     
+    CLASS_ATTR_LONG(c, "coarseness", 0, t_morphograph, coarseness);
+    CLASS_ATTR_LABEL(c, "coarseness", 0, "Coarse Resolution");
+    CLASS_ATTR_MAX(c, "coarseness", 0, "128");
+    CLASS_ATTR_MIN(c, "coarseness", 0, "1");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "coarseness", 0, "2");
     
     //color attrs
     
