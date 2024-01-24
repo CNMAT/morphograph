@@ -130,7 +130,6 @@ public:
     
     void draw_init(){
         //any drawing initialization should happen here
-    
         
         if(shape == std::string("linegraph")){
             linestr = "<"; //open
@@ -416,7 +415,8 @@ public:
 
         //draw all elements after calculating relevant data
         for (unsigned i = 0; i < layers.size(); ++i) {
-            long vsize = layers[i].desc.energy.size() / 2;
+            //long vsize = layers[i].desc.energy.size() / 2;
+            long vsize = layers[i].desc.energy.size();
             
             //j represents the analysis frame
             //this should be a parameter to thin the data out...
@@ -495,7 +495,6 @@ public:
           
                     switch(get_action_id(x, k)){
                         case PARAM_ROTATION: {
-                            //unimplemented
                             swrite.set_rotation(curr_feature_datum * 100.0);
                         } break;
                         case PARAM_XSCALE: {
