@@ -75,6 +75,7 @@ typedef struct _morphograph {
     t_handle l_svgh; //handle for svg text buffer
     
     bool verbose;
+    long coarseness;
     //t_hashtab *hash_table;
 } t_morphograph;
 
