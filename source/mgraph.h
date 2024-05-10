@@ -14,7 +14,7 @@
 //#define MAX_NUM_SHAPES 12       //unimplemented
 
 //#define NUM_FEATURES 14
-#define NUM_FEATURES 8
+#define NUM_FEATURES 9
 
 #define FEATURE_ENERGY 0
 #define FEATURE_ZCR 1
@@ -24,7 +24,7 @@
 #define FEATURE_SPECCREST 5
 #define FEATURE_SPECFLAT 6
 #define FEATURE_SPECSKEW 7
-//#define FEATURE_SPECCENTER 8
+#define FEATURE_SPECCENTER 8
 //#define FEATURE_SPECSPREAD 9
 //#define FEATURE_SPECFLUX 10
 //#define FEATURE_SPECDECR 11
