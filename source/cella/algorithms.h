@@ -115,9 +115,8 @@ T min (
 
 template <typename T>
 T max (
-	const T* values, 
-	int N) {
-	if (1 > N) return 0;
+	const T* values, int N) {
+        if (1 > N) return 0;
 	
 	T m = values[0];
 	for (int i = 0; i < N; ++i) {
