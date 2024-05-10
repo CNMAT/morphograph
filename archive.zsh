@@ -13,8 +13,10 @@ echo "back up dir is: " $backup_dir
 
 if [ -d $backup_dir ]
 then
+	echo 'found a previously existing backup dir; removing contents...'
 	rm -rf $backup_dir/*
 else
+	echo 'creating backup directory'
 	mkdir $backup_dir
 fi
 
