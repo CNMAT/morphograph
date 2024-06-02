@@ -1,6 +1,6 @@
 # {Morphograph}
 
-**Morphograph** creates visual scores for sounds. This software is a proof of concept based on **Ocular scores** by Linda Bouchard.
+**Morphograph** creates visual scores for sounds. This software is a proof of concept based on **Ocular Scores** by Linda Bouchard.
 
 Build instructions (from root folder):
 
