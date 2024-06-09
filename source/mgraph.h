@@ -13,7 +13,7 @@
 #define SHAPE_DIVISOR 8
 //#define MAX_NUM_SHAPES 12       //unimplemented
 
-//#define NUM_FEATURES 14
+#define NUM_ACTIONS 7
 #define NUM_FEATURES 9
 
 #define FEATURE_ENERGY 0
@@ -31,8 +31,6 @@
 //#define FEATURE_SPECSLOPE 12
 //#define FEATURE_INHARM 13
 
-#define NUM_ACTIONS 7
-
 #define PARAM_XSCALE 0
 #define PARAM_YSCALE 1
 #define PARAM_SIZE 2
@@ -44,7 +42,6 @@
 
 #define NUM_SHAPES 6
 #define NUM_STYLES 3
-
 #define MAX_MAPPINGS 24
 
 typedef struct _morphograph {
@@ -76,6 +73,7 @@ typedef struct _morphograph {
     
     bool verbose;
     long coarseness;
+    long rendermode;
     //t_hashtab *hash_table;
 } t_morphograph;
 
