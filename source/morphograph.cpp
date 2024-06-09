@@ -51,21 +51,24 @@ void morphograph_write(t_morphograph *x, t_symbol *s);
 t_max_err morphograph_notify(t_morphograph *x, t_symbol *s, t_symbol *msg, void *sender, void *data); //buffer related
 
 //custom/private user methods- internal only
+//printing
 static void post_info(void);
-static void populate_features(t_morphograph *x);
-static void populate_actions(t_morphograph *x);
-static void populate_shapes(t_morphograph *x);
-static void populate_styles(t_morphograph *x);
 static void post_options(t_morphograph *x);
 static void post_parameters(t_morphograph *x);
 static void post_mappings(t_morphograph *x);
 static void process_descmap(t_morphograph *x, t_dictionary *d);
 static void process_transform(t_morphograph *x, t_dictionary *d);
+
+//utilities
+static void populate_features(t_morphograph *x);
+static void populate_actions(t_morphograph *x);
+static void populate_shapes(t_morphograph *x);
+static void populate_styles(t_morphograph *x);
 static int get_feature_id(t_morphograph *x, short curr);
 static int get_action_id(t_morphograph *x, short curr);
 static int get_num_digits(int n);
+
 static void append_svg_open(t_morphograph *x);
-//static void append_svg_txt(t_morphograph *x, char *line);
 static void append_svg_txt(t_morphograph *x, std::string linestr);
 static void append_svg_close(t_morphograph *x);
 
@@ -93,10 +96,9 @@ class ShapeWriter {
     Parameters *params;
     int vecsize;
     float elem_width, elem_height, x, y, xdev, linewidth, trilen, yoffset, size;
-    unsigned int bright, rotation; //make x a double???
+    unsigned int bright, rotation; //make x a double --TODO
     unsigned short drawstyle;
     std::string linestr, bs, shape, xs, ys, ws, hs, xos, yos, lws, offset_x, offset_y;
-    
     
 private:
     ShapeWriter& operator = (ShapeWriter&);
@@ -110,33 +112,33 @@ public:
         shape = _shape;
     
         //defaults
-        size = 1.0;
+        size = 1.;
         rotation = 0.;
-        elem_width = 8.0;   //min width - should be attribute???
-        elem_height = 8.0;  //min height - should be attribute???
+        elem_width = 8.0;   //min width - should be attribute --TODO
+        elem_height = 8.0;  //min height - should be attribute --TODO
         y = 0.5;
         xdev = 0.;
         bright = 0;
         linewidth = 0.5;
         drawstyle = 0; //0=stroke 1=fill 2=both
-        
+
     }
     
     virtual ~ShapeWriter() {
 	//linestr.delete(); //not sure if there is a better way...
-        //clean up???
+        //clean up --TODO
         //could be a memory leak here
     }
     
-    void draw_init(){
+    void draw_init() {
         //any drawing initialization should happen here
         
-        if(shape == std::string("linegraph")){
+        if(shape == std::string("linegraph")) {
             linestr = "<"; //open
             //default strings for filewriter
             float tx = (x / float(vecsize)) * float(params->width);
             float ty = params->height;
-            object_post((t_object *)obj, "ty is: %f", ty);
+            //object_post((t_object *)obj, "ty is: %f", ty);
             calc_position_info(tx, ty);
             
             linestr.append("path d=\"M " + xs + " " + ys + " ");
@@ -144,12 +146,15 @@ public:
         
     }
     
-    void draw(){
+    void draw() {
         lws = std::to_string(linewidth);
         bs = std::to_string(bright);
         
         float tx = (x / float(vecsize)) * float(params->width);
         float ty = (1.0 - y) * params->height;
+        
+        //object_post((t_object *)obj, "reg y is: %f", y);
+        //object_post((t_object *)obj, "ty is: %f", ty);
 
         calc_position_info(tx, ty);
 
@@ -160,19 +165,19 @@ public:
 
         linestr.append("<"); //open
         
-        if(shape == std::string("letters")){
+        if(shape == std::string("letters")) {
             draw_letter();
             return;
         }
         
         //otherwise, normal operations...
         
-        //take out circle ???
-        if(shape == std::string("circles")){
+        //take out circle --TODO
+        if(shape == std::string("circles")) {
             draw_circle();
             //set_transform(offset_x, offset_y);
         }
-        if(shape == std::string("rectangles")){
+        if(shape == std::string("rectangles")) {
             draw_rectangle();
             set_transform(offset_x, offset_y);
         }
@@ -180,8 +185,7 @@ public:
             draw_ellipse();
             set_transform(offset_x, offset_y);
         }
-        if(shape == std::string("triangles")){
-            //object_error((t_object *)x, "triangle is not implemented.");
+        if(shape == std::string("triangles")) {
             draw_triangle();
             set_transform(offset_x, offset_y);
         }
@@ -194,7 +198,7 @@ public:
     void end_shape(){
         // append linestring text to doc
         
-        if(shape == std::string("linegraph")){
+        if(shape == std::string("linegraph")) {
             linestr.append("\" ");
             linestr.append("stroke=\"black\" fill=\"transparent\"");
             //eval_drawstyle();
@@ -206,60 +210,60 @@ public:
 
     }
     
-    void set_params(Parameters *_params){
+    void set_params(Parameters *_params) {
         params = _params;
     }
-    void set_rotation(float _rot){
+    void set_rotation(float _rot) {
         rotation = unsigned(_rot) % 360;
     }
-    void set_vecsize(long _vsize){
+    void set_vecsize(long _vsize) {
         vecsize = _vsize;
     }
-    void set_width(float _wid){
+    void set_width(float _wid) {
         elem_width = _wid;
     }
-    void set_height(float _height){
+    void set_height(float _height) {
         elem_height = _height;
     }
-    void set_size(float _size){
+    void set_size(float _size) {
         size = _size;
     }
-    void set_x(float _x){
+    void set_x(float _x) {
         x = _x;
     }
-    void set_y(float _y){
+    void set_y(float _y) {
         y = _y;
     }
-    void set_xdev(float _xdev){
+    void set_xdev(float _xdev) {
         xdev = _xdev;
     }
-    void set_linewidth(float _lwidth){
+    void set_linewidth(float _lwidth) {
         linewidth = _lwidth;
     }
     /*
     void set_idx(unsigned _i){
         idx = _i;
     }*/
-    void set_brightness(char _bright){
+    void set_brightness(char _bright) {
         bright = _bright;
     }
    
-    void set_drawstyle(std::string _style){
-        if(_style == std::string("stroke")){
+    void set_drawstyle(std::string _style) {
+        if(_style == std::string("stroke")) {
             drawstyle = 0;
         }
-        if(_style == std::string("fill")){
+        if(_style == std::string("fill")) {
             drawstyle = 1;
         }
-        if(_style == std::string("both")){
+        if(_style == std::string("both")) {
             drawstyle = 2;
         }
     }
     
 private:
 
-    void eval_drawstyle(){
-        switch(drawstyle){
+    void eval_drawstyle() {
+        switch(drawstyle) {
             case 0: //stroke; consider stroke width
                 linestr.append("stroke=\"rgb(0,0,0)\" stroke-width=\"" + lws + "\"");
                 linestr.append("fill=\"transparent\" ");
@@ -274,9 +278,10 @@ private:
         }
     }
     
-    void calc_position_info(float tx, float ty){
+    void calc_position_info(float tx, float ty) {
       
-        float baseline_scalar = 15;
+        //baseline should be set differently based on the rendering mode
+        float baseline_scalar = 1.;
         float aw = baseline_scalar * elem_width * size;   //actual width
         float hwn = -1. * (aw / 2.);    //half width negative
         float ah = baseline_scalar * elem_height * size;  //actual height
@@ -290,7 +295,7 @@ private:
         ys = std::to_string(ty);
 
     }
-    void set_transform(std::string ox, std::string oy){
+    void set_transform(std::string ox, std::string oy) {
         //transform characteristics
         std::string rstr = std::to_string(rotation);
         linestr.append("transform=\""); //--------------------------
@@ -300,7 +305,7 @@ private:
         linestr.append("\" "); //-------------------------------------
     }
     
-    void draw_triangle(){
+    void draw_triangle() {
         //linestr.append("polygon points=\"x, y x, y x, y\"");
         //aw is width / ah is height
         //hwn is half width neg / hhn is half height neg
@@ -308,26 +313,26 @@ private:
         linestr.append("polygon points=\"x, y x, y x, y\"");
     }
     
-    void draw_circle(){
+    void draw_circle() {
         //note that circles are drawn via their center point by default
         std::string ts = std::to_string((size * 8));
         linestr.append("circle cx=\"" + xs + "\" cy=\"" + ys + "\" r=\"" + ts + "\" ");
     }
 
-    void draw_rectangle(){
+    void draw_rectangle() {
         linestr.append("rect width=\"" + ws + "\" height=\"" + hs + "\" ");
     }
     
-    void draw_ellipse(){
+    void draw_ellipse() {
         linestr.append("ellipse rx=\"" + ws + "\" ry=\"" + hs + "\" ");
     }
     
-    void draw_linepoint(){
+    void draw_linepoint() {
         //https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
         linestr.append("L " + xs + " " + ys + " ");
     }
     
-    void draw_letter(){
+    void draw_letter() {
         int l = rand() % 26;
         char ls = 'a';
         std::string letter{(char)(ls + l)};
@@ -349,6 +354,8 @@ class Morphograph {
     Parameters params;
     BufferInstance *bi;
     std::vector<Layer> layers;
+    double m_std_dev, m_mean;
+    long m_vecsize;
 
 private:
     
@@ -378,34 +385,36 @@ public:
         layers.push_back(l);
     }
     
+    //method of class morphograph
     void render() {
         
         object_post((t_object *)x, "Rendering...");
         
-        //write first lines for svg file into temp buf
-        append_svg_open(x);
+        append_svg_open(x); //write first lines for svg file into temp buf
         
         //find the layer with the largest list for energy
         int max_frames = 0;
-        
         for (unsigned i = 0; i < layers.size(); ++i) {
             if (max_frames < layers[i].desc.energy.size()) {
                 max_frames = layers[i].desc.energy.size();
             }
         }
         
-        double min_freq = params.sr / 2, max_freq = 1;  // large mins
-        double min_irr = params.sr / 2, max_irr = 1;    // large mins
-        double min_nrg = params.fft_size, max_nrg = 0;
-        double min_zcr = params.sr / 2, max_zcr = 0;
-        
-        //resize the lists to all be standardized based on max_frames
+        //resize the lists based on max_frames
         for (unsigned i = 0; i < layers.size (); ++i) {
             for (unsigned j = 0; j < layers[i].desc.energy.size (); ++j) {
                 //layers[i].desc.highest_peak_Hz.resize (max_frames, 0);
                 layers[i].desc.energy.resize(max_frames, 0);
                 //layers[i].desc.zcr.resize (max_frames, 0);
             }
+        
+        
+        double min_freq = params.sr / 2, max_freq = 1;  // large mins
+        double min_irr = params.sr / 2, max_irr = 1;    // large mins
+        double min_nrg = params.fft_size, max_nrg = 0;
+        double min_zcr = params.sr / 2, max_zcr = 0;
+        
+
            
             min_freq = 0.;
             max_freq = params.sr / 2.;
@@ -417,11 +426,7 @@ public:
         for (unsigned i = 0; i < layers.size(); ++i) {
             //long vsize = layers[i].desc.energy.size() / 2;
             long vsize = layers[i].desc.energy.size();
-            
-            //j represents the analysis frame
-            //this should be a parameter to thin the data out...
-            unsigned skip_by = 2;
-            
+                        
             ShapeWriter swrite(x, layers[i].shape);
             swrite.set_params(&params);
             swrite.set_drawstyle(x->l_style->s_name);
@@ -439,11 +444,11 @@ public:
                 double sc_freq = (layers[i].desc.speccentr[j] / (max_freq - min_freq)) + min_freq;
                 double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
 
-                for(int k = 0; k < x->l_mapcount; k++){
+                for(int k = 0; k < x->l_mapcount; k++) {
                     // j is the frame
                     double curr_feature_datum;
                     
-                    switch(get_feature_id(x, k)){
+                    switch(get_feature_id(x, k)) {
                         case FEATURE_ENERGY: {
                             curr_feature_datum = layers[i].desc.energy[j];
                         } break;
@@ -453,24 +458,31 @@ public:
                         case FEATURE_HFC: {
                             curr_feature_datum = layers[i].desc.hfc[j];
                         } break;
-//                        case FEATURE_INHARM: {
-//                            curr_feature_datum = layers[i].desc.inharmonicity[j];
-//                        } break;
                         case FEATURE_SPECIRR: {
                             curr_feature_datum = layers[i].desc.specirr[j];
-                        } break;
-//                        case FEATURE_SPECCENTER: {
-//                            curr_feature_datum = layers[i].desc.speccentr[j];
-//                        } break;
-//                        case FEATURE_SPECSPREAD: {
-//                            curr_feature_datum = layers[i].desc.specspread[j];
-//                        } break;
-                        case FEATURE_SPECSKEW: {
-                            curr_feature_datum = layers[i].desc.specskew[j];
                         } break;
                         case FEATURE_SPECKURT: {
                             curr_feature_datum = layers[i].desc.speckurt[j];
                         } break;
+                        case FEATURE_SPECCREST: {
+                            curr_feature_datum = layers[i].desc.speccrest[j];
+                        } break;
+                        case FEATURE_SPECFLAT: {
+                            curr_feature_datum = layers[i].desc.specflat[j];
+                        } break;
+                        case FEATURE_SPECSKEW: {
+                            curr_feature_datum = layers[i].desc.specskew[j];
+                        } break;
+                        case FEATURE_SPECCENTER: {
+                            curr_feature_datum = layers[i].desc.speccentr[j];
+                        } break;
+
+//                        case FEATURE_INHARM: {
+//                            curr_feature_datum = layers[i].desc.inharmonicity[j];
+//                        } break;
+//                        case FEATURE_SPECSPREAD: {
+//                            curr_feature_datum = layers[i].desc.specspread[j];
+//                        } break;
 //                        case FEATURE_SPECFLUX: {
 //                            curr_feature_datum = layers[i].desc.specflux[j];
 //                        } break;
@@ -480,12 +492,7 @@ public:
 //                        case FEATURE_SPECSLOPE: {
 //                            curr_feature_datum = layers[i].desc.specslope[j];
 //                        } break;
-                        case FEATURE_SPECFLAT: {
-                            curr_feature_datum = layers[i].desc.specflat[j];
-                        } break;
-                        case FEATURE_SPECCREST: {
-                            curr_feature_datum = layers[i].desc.speccrest[j];
-                        } break;
+
                             
                         default: {
                             object_error((t_object *)x, "Render: Unknown or invalid feature id.  Aborting.");
@@ -493,21 +500,22 @@ public:
                         }
                     }
           
-                    switch(get_action_id(x, k)){
+                    switch(get_action_id(x, k)) {
+                            
                         case PARAM_ROTATION: {
-                            swrite.set_rotation(curr_feature_datum * 100.0);
+                            swrite.set_rotation(curr_feature_datum * 360.); //eval what to do here --TODO
                         } break;
                         case PARAM_XSCALE: {
-                            //object_post((t_object *)x, "detected xscale");
                             swrite.set_width(curr_feature_datum);
+                            //object_post((t_object *)x, "detected xscale");
                         } break;
                         case PARAM_YSCALE: {
-                            //object_post((t_object *)x, "detected yscale");
                             swrite.set_height(curr_feature_datum);
+                            //object_post((t_object *)x, "detected yscale");
                         } break;
                         case PARAM_SIZE: {
-                            //object_post((t_object *)x, "detected size");
                             swrite.set_size(curr_feature_datum);
+                            //object_post((t_object *)x, "detected size");
                         } break;
                         case PARAM_YLOC: {
                             swrite.set_y(curr_feature_datum);
@@ -518,16 +526,16 @@ public:
 //                            object_error((t_object *)x, "x deviation is unimplemented.");
 //                        } break;
                         case PARAM_BRIGHTNESS: {
-                            
                             char b = curr_feature_datum * 255;
                             swrite.set_brightness(b);
                             //object_post((t_object *)x, "brightness %d", b);
                             
                         } break;
                         case PARAM_LINEWIDTH: {
-                            //object_post((t_object *)x, "detected linewidth; curr feature data: %f", curr_feature_datum);
                             swrite.set_linewidth(curr_feature_datum * 2.5);
+                            //object_post((t_object *)x, "detected linewidth; curr feature data: %f", curr_feature_datum);
                         } break;
+                            
                         default: {
                             object_error((t_object *)x, "render: cannot find valid action id.");
                             return;
@@ -535,9 +543,7 @@ public:
                     }
                 }
                 
-                
                 swrite.draw();
-        
             }
             swrite.end_shape();
         }
@@ -545,16 +551,276 @@ public:
         //do something here to call write()
     }
     
+    void normalize_features(void) {
+        
+        object_post((t_object *)x, "normalize features called...");
+        object_post((t_object *)x, "--------------------------------------");
+        //need to add a size parameter to layer or desc
+   
+        //for every mapped feature,
+        for(int i = 0; i < x->l_mapcount; i++) {
+            switch(get_feature_id(x, i)) {
+                case FEATURE_ENERGY: {
+                    normalize_feature(layers[0].desc.energy);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.energy, x->l_features[0]);
+                } break;
+                case FEATURE_ZCR: {
+                    normalize_feature(layers[0].desc.zcr);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.zcr, x->l_features[1]);
+                } break;
+                case FEATURE_HFC: {
+                    normalize_feature(layers[0].desc.hfc);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.hfc, x->l_features[2]);
+                } break;
+                case FEATURE_SPECIRR: {
+                    normalize_feature(layers[0].desc.specirr);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.hfc, x->l_features[3]);
+                } break;
+                case FEATURE_SPECKURT: {
+                    normalize_feature(layers[0].desc.speckurt);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.speckurt, x->l_features[4]);
+                } break;
+                case FEATURE_SPECCREST: {
+                    normalize_feature(layers[0].desc.speccrest);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.speccrest, x->l_features[5]);
+                } break;
+                case FEATURE_SPECFLAT: {
+                    normalize_feature(layers[0].desc.specflat);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.specflat, x->l_features[6]);
+                } break;
+                case FEATURE_SPECSKEW: {
+                    normalize_feature(layers[0].desc.specskew);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.specskew, x->l_features[7]);
+                } break;
+                case FEATURE_SPECCENTER: {
+                    normalize_feature(layers[0].desc.speccentr);
+                    if(x->verbose)
+                        post_feature(layers[0].desc.speccentr, x->l_features[8]);
+                } break;
+
+                default: {
+                    object_error((t_object *)x, "Norm Features: Unknown or invalid feature id.  Aborting.");
+                    return;
+                }
+            }
+        }
+    }
+    
+    void standardize_features(void) {
+        
+        //flatten all features into a single vec
+        std::vector<double> vec_flat = flatten(0);
+        std::vector<double> vec_flat_hz = flatten(1);
+        
+        //find mean, std dev, and vecsize for class instance
+        m_mean = get_mean(vec_flat);
+        m_std_dev = get_std_dev(vec_flat, m_mean);
+        m_vecsize = layers[0].desc.energy.size();  //analysis has been done
+        
+        long i;
+
+        for(i = 0; i < x->l_mapcount; i++) {
+            switch(get_feature_id(x, i)) {
+                case FEATURE_ENERGY: {
+                    object_post((t_object *)x, "standardizing energy");
+                    standardize_feature(layers[0].desc.energy);
+                } break;
+                case FEATURE_ZCR: {
+                    object_post((t_object *)x, "standardizing zcr");
+                    standardize_feature(layers[0].desc.zcr);
+                } break;
+                case FEATURE_HFC: {
+                    object_post((t_object *)x, "standardizing hfc");
+                    standardize_feature(layers[0].desc.hfc);
+                } break;
+                case FEATURE_SPECIRR: {
+                    object_post((t_object *)x, "standardizing specirr");
+                    standardize_feature(layers[0].desc.specirr);
+                } break;
+                case FEATURE_SPECKURT: {
+                    object_post((t_object *)x, "standardizing speckurt");
+                    standardize_feature(layers[0].desc.speckurt);
+                } break;
+                case FEATURE_SPECCREST: {
+                    object_post((t_object *)x, "standardizing speccrest");
+                    standardize_feature(layers[0].desc.speccrest);
+                } break;
+                case FEATURE_SPECFLAT: {
+                    object_post((t_object *)x, "standardizing specflat");
+                    standardize_feature(layers[0].desc.specflat);
+                } break;
+                case FEATURE_SPECSKEW: {
+                    object_post((t_object *)x, "standardizing specskew");
+                    standardize_feature(layers[0].desc.specskew);
+                } break;
+                case FEATURE_SPECCENTER: {
+                    object_post((t_object *)x, "standardizing speccentr");
+                    standardize_feature(layers[0].desc.speccentr);
+                } break;
+
+                default: {
+                    object_error((t_object *)x, "Flatten: Unknown or invalid feature id.  Aborting.");
+                    return;
+                }
+            }
+        }
+    }
+    
+    void post_feature(std::vector<double> &vals, char *name) {
+        object_post((t_object *)x, "feature_print %s start---------------------", name);
+        long size = vals.size();
+        for(long i = 0; i < size; i++) {
+            object_post((t_object *)x, "feature_print %s: %f", name, vals[i]);
+        }
+    }
+    
+    
 private:
     
-    void get_min_max (std::vector<double> &vals, double &min_v, double &max_v) {
+ 
+    void normalize_feature(std::vector<double> &vals) {
+        long size = vals.size();
+        long i;
+        double min_v, max_v;
+        get_min_max(vals, min_v, max_v);
+        
+        for(i = 0; i < size; i++) {
+            double tval = vals[i];
+            vals[i] = (tval - min_v) / (max_v - min_v);
+            if(x->verbose)
+                object_post((t_object *)x, "nrm val: %f", vals[i]);
+        }
+    }
+    
+    void standardize_feature(std::vector<double> &vals) {
+        long i;
+        double std_val;
+        
+        for(i = 0; i < m_vecsize; i++) {
+            std_val = (vals[i] - m_mean) / m_std_dev;
+            vals[i] = linear_map(std_val, -3.0, 3.0, 0., 1.);
+            if(x->verbose)
+                object_post((t_object *)x, "std val: %f", vals[i]);
+        }
+    }
+    
+    double linear_map(double in, double imn, double imx, double omn, double omx) {
+        double norm = (in - imn) / (imx - imn);
+        return (norm * (omx - omn)) + omn;
+    }
+    
+    void get_min_max(std::vector<double> &vals, double &min_v, double &max_v) {
         if (max<double> (&vals[0], vals.size()) > max_v) {
             max_v = max<double> (&vals[0], vals.size ());
         }
-        if (min<double> (&vals[0], vals.size ()) < min_v) {
+        if (min<double> (&vals[0], vals.size()) < min_v) {
             min_v = min<double> (&vals[0], vals.size ());
         }
     }
+    
+    double get_mean(std::vector<double> &vals) {
+        
+        double sum = 0.;
+        long len = vals.size();
+        long i;
+        
+        for(i = 0; i < len; i++) {
+            sum += vals[i];
+        }
+        //return mean(&vals[0], vals.size());
+        return sum / (double)len;
+    }
+    
+    double get_std_dev(std::vector<double> &vals, double local_mean) {
+
+        double variance_sum = 0.;
+        long len = vals.size();
+        long i;
+        
+        for(i = 0; i < len; i++) {
+            variance_sum += pow(vals[i] - local_mean, 2);
+        }
+        
+        const double variance = variance_sum / (len - 1);
+        return sqrt(variance);
+    }
+    
+    std::vector<double> flatten(int type) {
+        
+        std::vector<double> vec_master;
+        std::vector<double> vec_master_hz; //for frequency-based standardization
+        //for every mapped feature
+        for(int i = 0; i < x->l_mapcount; i++) {
+
+            std::vector<double> tmp;
+            
+            switch(get_feature_id(x, i)) {
+                case FEATURE_ENERGY: {
+                    tmp = layers[0].desc.energy;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_ZCR: {
+                    tmp = layers[0].desc.zcr;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_HFC: {
+                    tmp = layers[0].desc.hfc;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_SPECIRR: {
+                    tmp = layers[0].desc.specirr;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_SPECKURT: {
+                    tmp = layers[0].desc.speckurt;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_SPECCREST: {
+                    tmp = layers[0].desc.speccrest;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_SPECFLAT: {
+                    tmp = layers[0].desc.specflat;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_SPECSKEW: {
+                    tmp = layers[0].desc.specskew;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+                case FEATURE_SPECCENTER: {
+                    tmp = layers[0].desc.speccentr;
+                    vec_master.insert(vec_master.end(), tmp.begin(), tmp.end());
+                } break;
+
+                default: {
+                    object_error((t_object *)x, "Flatten: Unknown or invalid feature id.  Aborting.");
+                    return;
+                }
+            }
+            
+            
+        }
+        
+        if(type == 0) {
+            return vec_master;
+        } else if (type == 1) {
+            return vec_master_hz;
+        } else {
+            object_error((t_object *)x, "Standardization Error: wrong vector type, or none supplied");
+        }
+        
+    }
+    
+
+    
 };
 
 //BufferInstance is a replacement class for WavFileIn
@@ -576,7 +842,7 @@ public:
     
     ~BufferInstance() {
         //clean up
-        //should I free the c++ buffer here ???
+        //should I free the c++ buffer here --TODO
     }
     
     char * getFileName() {
@@ -593,15 +859,16 @@ public:
         return info.b_sr;
     }
     
-    //this was renamed from getDataSizeInBytes() and changed datatype ???
+    //this was renamed from getDataSizeInBytes() and changed datatype --TODO
     long getDataSizeInFloats() {
         return info.b_size;
     }
     
-    //is frames the same as samples ???
+    //is frames the same as samples --TODO
     long getNumSamples() {
+        //return info.b_frames;
         return info.b_frames;
-        //buffer_getframecount(obj)  ???
+        //buffer_getframecount(obj) //eval whether or not to use frames/samples/etc --TODO
     }
     
     //changed datatype in call to this
@@ -616,6 +883,7 @@ public:
 //C++/C functions
 //-------------------------------------------------------------------------------------------------
 
+//standalone function
 static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
     
     Parameters p = x->l_params;
@@ -670,6 +938,8 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
         }
     }
     
+    object_post((t_object *)x, "///////// Analyzing...");
+    
     //generate window for analysis and populate requisite vars
     std::vector<double> vbuffer (p.fft_size * 2); // complex
     std::vector<double> window (p.fft_size);
@@ -720,8 +990,7 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
             sum += a * a;
         }
         double e = std::sqrt (sum / p.fft_size); //we push this later
-        d.energy.push_back(e * 10.);
-        //d.energy.push_back(e);
+        d.energy.push_back(e);
         
         //centroid
         double sc = speccentr(&amps[0], &freqs[0], p.fft_size / 2);
@@ -739,15 +1008,15 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
             switch(get_feature_id(x, i)) {
                 case FEATURE_ENERGY: {
                     if(verbose)
-                        object_post((t_object *)x, "spec energy: %f", e * 10.);
-                    //d.energy.push_back(e * 10.);
+                        object_post((t_object *)x, "spec energy: %f", e);
+                    //we do not push this here because it's a required feature
                 } break;
                 case FEATURE_ZCR: {
                     //double z = zcr<double>(&vsamples[ptr], p.fft_size / 2);
                     double z = zcr<double>(&vsamples[ptr], p.fft_size);
                     if(verbose)
-                        object_post((t_object *)x, "spec zcr: %f", z * 10.);
-                    d.zcr.push_back(z * 10.);
+                        object_post((t_object *)x, "spec zcr: %f", z);
+                    d.zcr.push_back(z);
                 } break;
                 case FEATURE_HFC: {
                     double h = hfc(&amps[0], p.fft_size / 2);
@@ -764,13 +1033,14 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
                 case FEATURE_SPECIRR: {
                     double si = specirr(&amps[0], p.fft_size / 2);
                     if(verbose)
-                        object_post((t_object *)x, "spec irr: %f", si * 0.001);
-                    d.specirr.push_back(si * 0.001);
+                        object_post((t_object *)x, "spec irr: %f", si);
+                    d.specirr.push_back(si);
                 } break;
-//                case FEATURE_SPECCENTER: {
-//                    //skip bc we already compute - should take this out
-//                    object_post((t_object *)x, "spec centroid: %f", sc);
-//                } break;
+                case FEATURE_SPECCENTER: {
+                    //skip pushing bc we already compute
+                    if(verbose)
+                        object_post((t_object *)x, "spec centroid: %f", sc);
+                } break;
 //                case FEATURE_SPECSPREAD:{
 //                    //skip bc we already compute - should take this out
 //                    object_post((t_object *)x, "spec spread: %f", sspr);
@@ -778,17 +1048,17 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
                 case FEATURE_SPECSKEW: {
                     double ssk = specskew(&amps[0], &freqs[0], p.fft_size / 2, sc, sspr);
                     if(verbose)
-                        object_post((t_object *)x, "spec skew: %f", ssk * 0.1);
-                    d.specskew.push_back(ssk * 0.1);
+                        object_post((t_object *)x, "spec skew: %f", ssk);
+                    d.specskew.push_back(ssk);
                 } break;
                 case FEATURE_SPECKURT: {
                     double k = speckurt(&amps[0], &freqs[0], p.fft_size / 2, sc, sspr);
                     if(verbose)
                         object_post((t_object *)x, "spec kurt: %f", k);
-                    d.speckurt.push_back(k * 0.01);
+                    d.speckurt.push_back(k);
                 } break;
 //                case FEATURE_SPECFLUX: {
-//                    //how to calculate the old amplitudes... ???
+//                    //how to calculate the old amplitudes... --TODO
 //                    //double f = specflux(&amps[0], oa, p.fft_size);
 //                    object_error((t_object *)x, "spectral flux is currently unimplemented.");
 //                    feature_valid = false;
@@ -806,14 +1076,14 @@ static void analyse_cpp(t_morphograph *x, Descriptors &d, BufferInstance *b) {
                 case FEATURE_SPECFLAT: {
                     double sf = specflat(&amps[0], p.fft_size / 2);
                     if(verbose)
-                        object_post((t_object *)x, "spec flatness: %f", sf * 10000.);
-                    d.specflat.push_back(sf * 10000.);
+                        object_post((t_object *)x, "spec flatness: %f", sf);
+                    d.specflat.push_back(sf);
                 } break;
                 case FEATURE_SPECCREST: {
                     double scr = speccrest(&amps[0], p.fft_size / 2);
                     if(verbose)
-                        object_post((t_object *)x, "spec crest: %f", scr * 10);
-                    d.speccrest.push_back(scr * 10);
+                        object_post((t_object *)x, "spec crest: %f", scr);
+                    d.speccrest.push_back(scr);
                 } break;
                     
                 default: {
@@ -855,8 +1125,8 @@ static int get_action_id(t_morphograph *x, short curr) {
     return -1;
 }
 
-//study this ???
-long get_num_digits(long n){
+//--TODO
+long get_num_digits(long n) {
     int min = 1;
     int max = 4096;
     
@@ -868,7 +1138,7 @@ long get_num_digits(long n){
 }
 
 
-//run the cpp portion of the morphograph; assumes setup has completed
+//cpp portion of the morphograph; assumes setup has completed
 static void mgraph_cpp(t_morphograph *x) {
 
     std::string tshape = std::string(x->l_shape->s_name);
@@ -879,10 +1149,31 @@ static void mgraph_cpp(t_morphograph *x) {
         BufferInstance b(x);
         Morphograph graph(x, &b);
         
-        //THIS NEEDS TO CHANGE SOON ???
+        //THIS NEEDS TO CHANGE SOON --TODO
         //do not compute the analysis when you define the shape; shape is for rendering
         
-        graph.add_layer(tshape);  //by default we'll only draw a single layer
+        graph.add_layer(tshape);  //by default, single layer (applies analysis)
+        
+        switch(x->rendermode) {
+            case 0:
+                //currently does nothing; raw data will probably not look correct
+                //in output SVG file...
+                object_post((t_object *)x, "render mode: raw data");
+                break;
+            case 1:
+                object_post((t_object *)x, "render mode: normalize");
+                graph.normalize_features();
+                break;
+            case 2:
+                object_post((t_object *)x, "render mode: standardize");
+                graph.standardize_features();
+                break;
+                
+            default:
+                object_error((t_object *)x, "Cannot find valid render mode.  Aborting.");
+                return;
+        }
+        
         graph.render();
         
         //multiple layers using atom array
@@ -894,7 +1185,7 @@ static void mgraph_cpp(t_morphograph *x) {
         outlet_bang(x->l_outlet_1);
     
         //once processing is finished, attempt to write the file
-        if(x->l_filepath && x->l_fnamesvg){
+        if(x->l_filepath && x->l_fnamesvg) {
             
             t_symbol *fp;
             
@@ -907,8 +1198,7 @@ static void mgraph_cpp(t_morphograph *x) {
             morphograph_write(x, fp);
             morphograph_load(x, fp);
             
-           
-        }else{
+        } else {
             object_error((t_object *)x, "cannot load svg file; please check filepath/filename");
         }
         
@@ -926,7 +1216,7 @@ static void mgraph_cpp(t_morphograph *x) {
 //c functions: dict-related
 //-------------------------------------------------------------------------------------------------
 
-void morphograph_dictionary(t_morphograph *x, t_symbol *s){
+void morphograph_dictionary(t_morphograph *x, t_symbol *s) {
     
     //reset globals
     x->l_fnamesvg = NULL;
@@ -943,19 +1233,19 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s){
     }
     
     //filename to be written to disk as SVG file
-    //maybe check to make sure about extension ???
-    //maybe take out criteria eval here ???
-    if(dictionary_hasentry(d, filename)){
+    //maybe check to make sure about extension --TODO
+    //maybe take out criteria eval here --TODO
+    if(dictionary_hasentry(d, filename)) {
         dictionary_getsym(d, filename, &tfilename);
         //object_post((t_object *)x, "dict in: filename: %s", tfilename->s_name);
         x->l_fnamesvg = tfilename;
-    }else{
+    } else {
         object_error((t_object *)x, "dict: no entry found for filename.  Aborting");
         return;
     }
         
     //process shape (only one currently)
-    if(dictionary_hasentry(d, shape)){
+    if(dictionary_hasentry(d, shape)) {
         dictionary_getsym(d, shape, &tshape);
         //object_post((t_object *)x, "dict in: shape: %s", tshape->s_name);
         x->l_shape = tshape;
@@ -964,7 +1254,7 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s){
         return;
     }
     
-    if(dictionary_hasentry(d, style)){
+    if(dictionary_hasentry(d, style)) {
         dictionary_getsym(d, style, &tstyle);
         //object_post((t_object *)x, "dict in: style: %s", tstyle->s_name);
         x->l_style = tstyle;
@@ -973,15 +1263,15 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s){
         return;
     }
     
-    if(dictionary_hasentry(d, descmap)){
+    if(dictionary_hasentry(d, descmap)) {
         process_descmap(x, d);
     }else{
         object_error((t_object *)x, "dict: no entry found for descmap (sub-dict).  Aborting.");
         return;
     }
      
-    if(dictionary_hasentry(d, transform)){
-        object_post((t_object *)x, "dict debug: processing transform...");
+    if(dictionary_hasentry(d, transform)) {
+        //object_post((t_object *)x, "dict debug: processing transform...");
         process_transform(x, d);
     }
         
@@ -990,8 +1280,8 @@ void morphograph_dictionary(t_morphograph *x, t_symbol *s){
 
 //there is a bug here - if the user specifies a feature that is not in the set it still takes
 //but sets the value to 0 which is rotation, then errors as rotation is unimplemented; need to
-//check what the user is doing against a valid set of options... ???
-static void process_descmap(t_morphograph *x, t_dictionary *d){
+//check what the user is doing against a valid set of options... --TODO
+static void process_descmap(t_morphograph *x, t_dictionary *d) {
 
     long numkeys, i = 0;
     
@@ -1005,14 +1295,14 @@ static void process_descmap(t_morphograph *x, t_dictionary *d){
         
     err = dictionary_getdictionary(d, descmap, &descmap_dictval);
     
-    if(err){
+    if(err) {
         object_error((t_object *)x, "error processing descriptor mappings from dictionary...");
-    }else{
+    } else {
         dd = (t_dictionary *)descmap_dictval;
         dictionary_getkeys(dd, &numkeys, &desckeys);
 
         x->l_mapcount = 0;
-        for(i = 0; i < numkeys; i++){
+        for(i = 0; i < numkeys; i++) {
             //get the key name
             descriptor = desckeys[i];
             //get the action associated with the key
@@ -1020,21 +1310,20 @@ static void process_descmap(t_morphograph *x, t_dictionary *d){
             x->l_chosen_features[x->l_mapcount] = descriptor;
             x->l_chosen_actions[x->l_mapcount] = action;
             x->l_mapcount++;
-            if(x->l_mapcount >= MAX_MAPPINGS){
+            if(x->l_mapcount >= MAX_MAPPINGS) {
                 object_error((t_object *)x, "reached the maximum number of mappings.  aborting.");
                 return;
             }
         }
-        
 
-        if(dd){
+        if(dd) {
             dictionary_freekeys(dd, numkeys, desckeys);
         }
     }
 }
 
 //process transform and populate l_params for analysis
-static void process_transform(t_morphograph *x, t_dictionary *d){
+static void process_transform(t_morphograph *x, t_dictionary *d) {
    // if(x->analyzed){
     t_object *transform_dictval = NULL;
     t_dictionary *td = NULL;
@@ -1042,25 +1331,25 @@ static void process_transform(t_morphograph *x, t_dictionary *d){
     
     err = dictionary_getdictionary(d, transform, &transform_dictval);
 
-    if(err){
+    if(err) {
         object_error((t_object *)x, "error processing transform info from dictionary...", err);
-    }else{
+    } else {
         td = (t_dictionary *)transform_dictval;
         t_symbol *wid = gensym("width");
         t_symbol *hei = gensym("height");
         t_symbol *zoo = gensym("zoom");
         
-        if(dictionary_hasentry(td, wid)){
+        if(dictionary_hasentry(td, wid)) {
             t_atom_long wv = NULL;
             dictionary_getlong(td, wid, &wv);
             x->l_params.width = (int)wv;
         }
-        if(dictionary_hasentry(td, hei)){
+        if(dictionary_hasentry(td, hei)) {
             t_atom_long hv = NULL;
             dictionary_getlong(td, hei, &hv);
             x->l_params.height = (int)hv;
         }
-        if(dictionary_hasentry(td, zoo)){
+        if(dictionary_hasentry(td, zoo)) {
             t_atom_long z = NULL;
             dictionary_getlong(td, zoo, &z);
             x->l_params.zoom = (int)z;
@@ -1075,7 +1364,7 @@ static void process_transform(t_morphograph *x, t_dictionary *d){
 //c functions: main features
 //-------------------------------------------------------------------------------------------------
 
-static void populate_features(t_morphograph *x){
+static void populate_features(t_morphograph *x) {
     x->l_features[0] = (char *)"energy";
     x->l_features[1] = (char *)"zcr";
     x->l_features[2] = (char *)"hfc";
@@ -1084,8 +1373,7 @@ static void populate_features(t_morphograph *x){
     x->l_features[5] = (char *)"speccrest";
     x->l_features[6] = (char *)"specflat";
     x->l_features[7] = (char *)"specskew";
-
-//    x->l_features[8] = (char *)"speccentr";
+    x->l_features[8] = (char *)"speccentr";
 //    x->l_features[9] = (char *)"specspread";
 //    x->l_features[10] = (char *)"specflux";
 //    x->l_features[11] = (char *)"specdecr";
@@ -1093,7 +1381,7 @@ static void populate_features(t_morphograph *x){
 //    x->l_features[13] = (char *)"inharmonicity";
 }
 
-static void populate_actions(t_morphograph *x){
+static void populate_actions(t_morphograph *x) {
     
     x->l_actions[0] = (char *)"xscale";
     x->l_actions[1] = (char *)"yscale";
@@ -1106,7 +1394,7 @@ static void populate_actions(t_morphograph *x){
     
 }
 
-static void populate_shapes(t_morphograph *x){
+static void populate_shapes(t_morphograph *x) {
     x->l_shapes[0] = (char *)"circles";
     x->l_shapes[1] = (char *)"ellipses";
     x->l_shapes[2] = (char *)"rectangles";
@@ -1115,20 +1403,21 @@ static void populate_shapes(t_morphograph *x){
     x->l_shapes[5] = (char *)"triangles";
 }
 
-static void populate_styles(t_morphograph *x){
+static void populate_styles(t_morphograph *x) {
     x->l_styles[0] = (char *)"stroke";
     x->l_styles[1] = (char *)"fill";
     x->l_styles[2] = (char *)"both";
 }
 
 //only called in class definition
-static void post_info(void){
-    post("[morphograph, ver. 0.2]");
+static void post_info(void) {
+    //version needs to be pulled from github tag info --TODO
+    post("[morphograph, ver. 0.1a]");
     post("sound scores; inspired by Linda Bouchard");
     post("(c) 2022, Carmine Cella & Jeff Lubow");
 }
 
-static void post_options(t_morphograph *x){
+static void post_options(t_morphograph *x) {
     short i;
     
     object_post((t_object *)x, "///////// Shapes");
@@ -1157,22 +1446,22 @@ static void post_options(t_morphograph *x){
     
 }
 
-static void post_mappings(t_morphograph *x){
+static void post_mappings(t_morphograph *x) {
     short i;
-    if(x->l_mapcount == 0){
+    if(x->l_mapcount == 0) {
         object_post((t_object *)x, "No mappings defined currently.");
         return;
     }
     
     object_post((t_object *)x, "///////// Mappings");
 
-    for(i = 0; i < x->l_mapcount; i++){
+    for(i = 0; i < x->l_mapcount; i++) {
         object_post((t_object *)x, "mapping id-%d -> feature %s mapped to %s", i, x->l_chosen_features[i]->s_name, x->l_chosen_actions[i]->s_name);
     }
    
 }
 
-static void post_parameters(t_morphograph *x){
+static void post_parameters(t_morphograph *x) {
     object_post((t_object *)x, "///////// Analysis / SVG parameters");
     object_post((t_object *)x, "sample rate: %f", x->l_params.sr);
     object_post((t_object *)x, "fft size: %d", x->l_params.fft_size);
@@ -1184,11 +1473,11 @@ static void post_parameters(t_morphograph *x){
 
 void morphograph_process(t_morphograph *x) {
     //only process if a valid buffer name exists in the dictionary
-    if(!buffer_ref_exists(x->l_buffer_reference)){
+    if(!buffer_ref_exists(x->l_buffer_reference)) {
         object_error((t_object *)x, "No buffer reference! Cannot complete descriptor mapping, aborting analysis.");
         return;
-    }else{
-        //do I need to free anything here???
+    } else {
+        //do I need to free anything here --TODO
         //should I be trying to use my BufferInstance later on instead of this check?
         t_buffer_info info;
         t_buffer_obj *obj;
@@ -1196,18 +1485,18 @@ void morphograph_process(t_morphograph *x) {
         obj = buffer_ref_getobject(x->l_buffer_reference);
         buffer_getinfo(obj, &info);
         
-        if(info.b_frames == 0){
+        if(info.b_frames == 0) {
             object_error((t_object *)x, "Buffer in use has zero samples.  Aborting.");
             return;
         }
     }
     
-    if(!x->l_filepath){
+    if(!x->l_filepath) {
         object_error((t_object *)x, "No valid filepath! Cannot complete file writing, aborting analysis.");
         return;
     }
     
-    if(!x->l_fnamesvg){
+    if(!x->l_fnamesvg) {
         object_error((t_object *)x, "No valid filename, which may indicate that a mapping dictionary hasn't been sent.  Aborting.");
         return;
     }
@@ -1227,6 +1516,20 @@ void morphograph_set(t_morphograph *x, t_symbol *s) {
     } else {
         buffer_ref_set(x->l_buffer_reference, s);
     }
+    
+    /*
+    t_buffer_info info;
+    t_buffer_obj *obj;
+    obj = buffer_ref_getobject(x->l_buffer_reference);
+    buffer_getinfo(obj, &info);
+    
+    object_post((t_object *)x, "buffer: name %s", info->b_name->s_name);
+    object_post((t_object *)x, "buffer: samples %d", info->b_samples);
+    object_post((t_object *)x, "buffer: frames %d", info->b_frames);
+    object_post((t_object *)x, "buffer: channels %d", info->b_nchans);
+    object_post((t_object *)x, "buffer: size %d", info->b_size);
+    object_post((t_object *)x, "buffer: sr %d", info->b_sr);
+    */
     
     //consider getting all buffer info here and populating object struct,
     //and/or calling translate_bufdata()
@@ -1326,7 +1629,7 @@ void morphograph_view(t_morphograph *x) {
 //-------------------------------------------------------------------------------------------------
 
 //load svg file from disk
-void morphograph_load(t_morphograph *x, t_symbol *s){
+void morphograph_load(t_morphograph *x, t_symbol *s) {
     char        filename[MAX_PATH_CHARS];
     short       pathid = 0;
     t_fourcc    *type = NULL;
@@ -1337,7 +1640,7 @@ void morphograph_load(t_morphograph *x, t_symbol *s){
    // if (s == _sym_emptytext) {
     if (s == gensym("")) {
         //no path given by user
-        if (open_dialog(filename, &pathid, &outtype, type, ntype)){
+        if (open_dialog(filename, &pathid, &outtype, type, ntype)) {
             return;
         }
     } else {
@@ -1371,6 +1674,7 @@ void morphograph_load(t_morphograph *x, t_symbol *s){
     }
 }
 
+//--TODO
 //void morphograph_size(t_morphograph *x, long width, long height) {
 //    t_size size;
 //    size.width = (double) width;
@@ -1383,7 +1687,7 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
     jbox_get_rect_for_view((t_object *)x, patcherview, &rect);
     t_jgraphics *g = (t_jgraphics *)patcherview_get_jgraphics(patcherview);     // Get the graphics context.
 
-    if(x && x->l_svg){
+    if(x && x->l_svg) {
         t_jrgba bg = x->l_background;;
         double sw, sh;
     
@@ -1392,29 +1696,37 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
         jgraphics_fill(g);
         
         jgraphics_scale(g, rect.width, rect.height);
-        jsvg_get_size(x->l_svg, &sw, &sh);
-        
+        //jsvg_get_size(x->l_svg, &sw, &sh);
+        sw = x->l_params.width;
+        sh = x->l_params.height;
         object_post((t_object *)x, "svg width: %f", sw);
         object_post((t_object *)x, "svg height: %f", sh);
         
         jgraphics_scale(g, 1./sw, 1./sh);
         jsvg_render(x->l_svg, g);
         
-    }else{
+    } else {
         t_jrgba color_bg, color_rr;
         double offset = 2.;
         double offset2 = 7.;
 
         //alpha is transparent if zero
-        color_bg.red = 0.064286; color_bg.green = 0.315738; color_bg.blue = 0.364286; color_bg.alpha = 1.;
-        color_rr.red = 0.217857; color_rr.green = 0.492961; color_rr.blue = 0.496429; color_rr.alpha = 1.;
+        color_bg.red = 0.064286;
+        color_bg.green = 0.315738;
+        color_bg.blue = 0.364286;
+        color_bg.alpha = 1.;
+        
+        color_rr.red = 0.217857;
+        color_rr.green = 0.492961;
+        color_rr.blue = 0.496429;
+        color_rr.alpha = 1.;
 
         jgraphics_set_source_jrgba(g, &color_bg);
         jgraphics_rectangle(g, 0, 0, rect.width, rect.height);
         jgraphics_fill(g);
 
         jgraphics_set_source_jrgba(g, &color_rr);
-        jgraphics_rectangle_rounded(g, offset2, offset2, rect.width - offset2*2, rect.height - offset2*2, 30, 30);
+        jgraphics_rectangle_rounded(g, offset2, offset2, rect.width - offset2 * 2, rect.height - offset2 * 2, 30, 30);
         jgraphics_fill(g);
     }
 }
@@ -1426,24 +1738,30 @@ void morphograph_paint(t_morphograph *x, t_object *patcherview) {
 //new filewriter --------------------------------------------
 //------------------------------------------------------------
 
-void append_svg_open(t_morphograph *x){
+void append_svg_open(t_morphograph *x) {
     //initialize handle for svg filewriter
     x->l_svgh = sysmem_newhandle(0);
 
-    //needs to grab dims from struct parameters
-    char *root1 = (char *)"<svg version=\"1.1\" width=\"";
-    my_sysmem_appendtextptrtohand(root1, x->l_svgh);
+    char *root0 = (char *)"<svg version=\"1.1\" width=\"";
+    my_sysmem_appendtextptrtohand(root0, x->l_svgh);
     
     char wid[get_num_digits(x->l_params.width)];
     sprintf(wid, "%ld", x->l_params.width);
     my_sysmem_appendtextptrtohand(wid, x->l_svgh);
     
-    char *root2 = (char *)"\" height=\"";
-    my_sysmem_appendtextptrtohand(root2, x->l_svgh);
+    char *root1 = (char *)"\" height=\"";
+    my_sysmem_appendtextptrtohand(root1, x->l_svgh);
     
     char hei[get_num_digits(x->l_params.height)];
     sprintf(hei, "%ld", x->l_params.height);
     my_sysmem_appendtextptrtohand(hei, x->l_svgh);
+    
+//    //viewBox = "0 0 500 500"
+//    char *root2 = (char *)"\" viewBox=\"0 0 ";
+//    my_sysmem_appendtextptrtohand(root2, x->l_svgh);
+//    my_sysmem_appendtextptrtohand(wid, x->l_svgh);
+//    my_sysmem_appendtextptrtohand((char *)" ", x->l_svgh);
+//    my_sysmem_appendtextptrtohand(hei, x->l_svgh);
     
     char *root3 = (char *)"\" xmlns=\"http://www.w3.org/2000/svg\">\n";
     my_sysmem_appendtextptrtohand(root3, x->l_svgh);
@@ -1456,7 +1774,7 @@ void append_svg_txt(t_morphograph *x, std::string linestr){
     
     strcpy(line, linestr.c_str());
     my_sysmem_appendtextptrtohand(line, x->l_svgh);
-    memset(line, '\0', sizeof(char) * linelen); //this ok???
+    memset(line, '\0', sizeof(char) * linelen); //evaluate --TODO
 }
 
 void append_svg_close(t_morphograph *x){
@@ -1556,7 +1874,7 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
     
     x = (t_morphograph *)object_alloc(morphograph_class);
     
-    if(x){
+    if(x) {
         boxflags = 0
                 | JBOX_DRAWFIRSTIN
                 //  | JBOX_NODRAWBOX
@@ -1585,6 +1903,7 @@ void *morphograph_new(t_symbol *msg, short argc, t_atom *argv) {
         x->l_buffer_reference = NULL;
         x->verbose = false;
         x->coarseness = 2;
+        x->rendermode = 1;  // 0 raw, 1 normalized, 2 standardized
     
         x->l_shape = NULL;
         x->l_svg = NULL;
@@ -1647,7 +1966,7 @@ void ext_main(void *r) {
     //class_addmethod(c, (method)morphograph_size, "size", A_LONG, A_LONG, 0);
     class_addmethod(c, (method)morphograph_set_path, "set_path", A_SYM, 0);
     class_addmethod(c, (method)morphograph_dictionary, "dictionary", A_SYM, 0);
-    class_addmethod(c, (method)morphograph_load, "load", A_DEFSYM, 0); //default sym; empty string???
+    class_addmethod(c, (method)morphograph_load, "load", A_DEFSYM, 0);
     class_addmethod(c, (method)morphograph_process, "process", 0);
 
     //class_addmethod(c, (method)morphograph_mapping_table, "mapping_table", A_GIMME, 0); //hashtable experiment
@@ -1668,9 +1987,15 @@ void ext_main(void *r) {
     
     CLASS_ATTR_LONG(c, "coarseness", 0, t_morphograph, coarseness);
     CLASS_ATTR_LABEL(c, "coarseness", 0, "Coarse Resolution");
-    CLASS_ATTR_MAX(c, "coarseness", 0, "128");
     CLASS_ATTR_MIN(c, "coarseness", 0, "1");
+    CLASS_ATTR_MAX(c, "coarseness", 0, "128");
     CLASS_ATTR_DEFAULTNAME_SAVE(c, "coarseness", 0, "2");
+    
+    CLASS_ATTR_LONG(c, "rendermode", 0, t_morphograph, rendermode);
+    CLASS_ATTR_LABEL(c, "rendermode", 0, "Render Mode");
+    CLASS_ATTR_MIN(c, "rendermode", 0, "0");
+    CLASS_ATTR_MAX(c, "rendermode", 0, "2");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "rendermode", 0, "1"); //default is noramlize
     
     //color attrs
     
@@ -1683,37 +2008,37 @@ void ext_main(void *r) {
     
     CLASS_STICKY_ATTR(c, "category", 0, "Analysis");
     
-    CLASS_ATTR_DOUBLE(c, "p_samplerate", 0, t_morphograph, l_params.sr);
-    CLASS_ATTR_LABEL(c, "p_samplerate", 0, "Analysis Sample Rate");
-    CLASS_ATTR_ORDER(c, "p_samplerate", 0, "1");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_samplerate", 0, "44100.0");
+    CLASS_ATTR_DOUBLE(c, "a_sample_rate", 0, t_morphograph, l_params.sr);
+    CLASS_ATTR_LABEL(c, "a_sample_rate", 0, "Analysis Sample Rate");
+    CLASS_ATTR_ORDER(c, "a_sample_rate", 0, "1");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "a_sample_rate", 0, "44100.0");
     
-    CLASS_ATTR_LONG(c, "p_fftsize", 0, t_morphograph, l_params.fft_size);
-    CLASS_ATTR_LABEL(c, "p_fftsize", 0, "Analysis FFT Size");
-    CLASS_ATTR_ORDER(c, "p_fftsize", 0, "2");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_fftsize", 0, "4096");
+    CLASS_ATTR_LONG(c, "a_fft_size", 0, t_morphograph, l_params.fft_size);
+    CLASS_ATTR_LABEL(c, "a_fft_size", 0, "Analysis FFT Size");
+    CLASS_ATTR_ORDER(c, "a_fft_size", 0, "2");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "a_fft_size", 0, "4096");
     
-    CLASS_ATTR_LONG(c, "p_hopsize", 0, t_morphograph, l_params.hop_size);
-    CLASS_ATTR_LABEL(c, "p_hopsize", 0, "Analysis Hop Size");
-    CLASS_ATTR_ORDER(c, "p_hopsize", 0, "3");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_hopsize", 0, "512");
+    CLASS_ATTR_LONG(c, "a_hop_size", 0, t_morphograph, l_params.hop_size);
+    CLASS_ATTR_LABEL(c, "a_hop_size", 0, "Analysis Hop Size");
+    CLASS_ATTR_ORDER(c, "a_hop_size", 0, "3");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "a_hop_size", 0, "512");
 
     CLASS_STICKY_ATTR(c, "category", 0, "SVG");
 
-    CLASS_ATTR_LONG(c, "p_width", 0, t_morphograph, l_params.width);
-    CLASS_ATTR_LABEL(c, "p_width", 0, "SVG width in pixels");
-    CLASS_ATTR_ORDER(c, "p_width", 0, "1");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_width", 0, "600");
+    CLASS_ATTR_LONG(c, "svg_p_width", 0, t_morphograph, l_params.width);
+    CLASS_ATTR_LABEL(c, "svg_p_width", 0, "SVG width in pixels");
+    CLASS_ATTR_ORDER(c, "svg_p_width", 0, "1");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "svg_p_width", 0, "600");
     
-    CLASS_ATTR_LONG(c, "p_height", 0, t_morphograph, l_params.height);
-    CLASS_ATTR_LABEL(c, "p_height", 0, "SVG height in pixels");
-    CLASS_ATTR_ORDER(c, "p_height", 0, "2");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_height", 0, "400");
+    CLASS_ATTR_LONG(c, "svg_p_height", 0, t_morphograph, l_params.height);
+    CLASS_ATTR_LABEL(c, "svg_p_height", 0, "SVG height in pixels");
+    CLASS_ATTR_ORDER(c, "svg_p_height", 0, "2");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "svg_p_height", 0, "400");
 
-    CLASS_ATTR_LONG(c, "p_zoom", 0, t_morphograph, l_params.zoom);
-    CLASS_ATTR_LABEL(c, "p_zoom", 0, "SVG zoom factor");
-    CLASS_ATTR_ORDER(c, "p_zoom", 0, "3");
-    CLASS_ATTR_DEFAULTNAME_SAVE(c, "p_zoom", 0, "1");
+    CLASS_ATTR_LONG(c, "svg_zoom", 0, t_morphograph, l_params.zoom);
+    CLASS_ATTR_LABEL(c, "svg_zoom", 0, "SVG zoom factor");
+    CLASS_ATTR_ORDER(c, "svg_zoom", 0, "3");
+    CLASS_ATTR_DEFAULTNAME_SAVE(c, "svg_zoom", 0, "1");
 
     
     CLASS_STICKY_ATTR_CLEAR(c, "category");
