@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 18.0, 68.0, 995.0, 757.0 ],
+		"rect" : [ 25.0, 60.0, 990.0, 879.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -2534,7 +2534,7 @@
 				"box" : 				{
 					"autopopulate" : 1,
 					"id" : "obj-25",
-					"items" : [ "air01.wav", ",", "air02.wav", ",", "air03.wav", ",", "backsift01.wav", ",", "backsift02.wav", ",", "bit01.wav", ",", "bit02.wav", ",", "bit03.wav", ",", "bit04.wav", ",", "bit05.wav", ",", "crackopen01.wav", ",", "crunchy01.wav", ",", "crunchy02.wav", ",", "crunchy03.wav", ",", "crunchy04.wav", ",", "crunchy05.wav", ",", "crunchy06.wav", ",", "dire.wav", ",", "ditty01.wav", ",", "ditty02.wav", ",", "ditty03.wav", ",", "ditty04.wav", ",", "ditty05.wav", ",", "dryscream01.wav", ",", "dryscream02.wav", ",", "fucked.wav", ",", "littlescrat.wav", ",", "metallichit01.wav", ",", "metallichit02.wav", ",", "phasedRing.wav", ",", "poonlong.wav", ",", "recordchop01.wav", ",", "recordchop02.wav", ",", "scratchfly.wav", ",", "scribble.wav", ",", "sine01.wav", ",", "sine02.wav", ",", "slink01.wav", ",", "slink02.wav", ",", "whaoh.wav", ",", "windyrim.wav" ],
+					"items" : "<empty>",
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
