@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 25.0, 60.0, 990.0, 879.0 ],
+		"rect" : [ 13.0, 65.0, 990.0, 773.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -69,12 +69,12 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-57",
-					"linecount" : 6,
+					"linecount" : 7,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 495.0, 661.0, 476.0, 87.0 ],
-					"text" : "this version automatically normalizes all spectral features and content by default so that mapping is simplified.  In the near future, there will be options for 1. standardization and 2. \"pass through\" which passes the spectral feature ranges directly from the analysis without further preparation.  In the medium future, there will be a graph layer in the UI that allows you to zoom, pan, select, and compare features for evaluation before rendering.  It will display ranges and may foster functions like \"zoom to fit\" etc.",
+					"patching_rect" : [ 495.0, 661.0, 476.0, 100.0 ],
+					"text" : "this version has rendermodes implemented, but it's preferred that the user stays in [rendermode 1] as it normalizes all spectral features and content by default so that mapping is simplified.  In the near future, standardization (rendermode 2) and \"pass-thru\" will be fully implemented so that the user can choose based on preference.  In the medium future, there will be a graph layer in the UI that allows you to zoom, pan, select, and compare features for evaluation before rendering, which will assist with [rendermode 0].  It will display ranges and may offer functions like \"zoom to fit\" etc.",
 					"textcolor" : [ 0.533333333333333, 0.086274509803922, 0.611764705882353, 1.0 ]
 				}
 
@@ -2541,7 +2541,6 @@
 					"outlettype" : [ "int", "", "" ],
 					"parameter_enable" : 0,
 					"patching_rect" : [ 44.0, 495.652261123267749, 124.0, 22.0 ],
-					"prefix" : "~/Documents/audio/all_samp_dir_wav/percussion_and_loops/experimental/experimental02/",
 					"types" : [ "WAVE", "AIFF", "MP3" ]
 				}
 
