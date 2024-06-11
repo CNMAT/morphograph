@@ -389,42 +389,27 @@ public:
     void render() {
         
         object_post((t_object *)x, "Rendering...");
-        
         append_svg_open(x); //write first lines for svg file into temp buf
         
-        //find the layer with the largest list for energy
         int max_frames = 0;
+        //only 1 layer currently
         for (unsigned i = 0; i < layers.size(); ++i) {
             if (max_frames < layers[i].desc.energy.size()) {
                 max_frames = layers[i].desc.energy.size();
             }
         }
         
-        //resize the lists based on max_frames
+        //only 1 layer currently
         for (unsigned i = 0; i < layers.size (); ++i) {
+            //resize energy vector based on max_frames
             for (unsigned j = 0; j < layers[i].desc.energy.size (); ++j) {
-                //layers[i].desc.highest_peak_Hz.resize (max_frames, 0);
                 layers[i].desc.energy.resize(max_frames, 0);
-                //layers[i].desc.zcr.resize (max_frames, 0);
             }
-        
-        
-        double min_freq = params.sr / 2, max_freq = 1;  // large mins
-        double min_irr = params.sr / 2, max_irr = 1;    // large mins
-        double min_nrg = params.fft_size, max_nrg = 0;
-        double min_zcr = params.sr / 2, max_zcr = 0;
-        
-
-           
-            min_freq = 0.;
-            max_freq = params.sr / 2.;
-            get_min_max (layers[i].desc.energy, min_nrg, max_nrg);
-            get_min_max (layers[i].desc.zcr, min_zcr, max_zcr);
         }
 
         //draw all elements after calculating relevant data
         for (unsigned i = 0; i < layers.size(); ++i) {
-            //long vsize = layers[i].desc.energy.size() / 2;
+            
             long vsize = layers[i].desc.energy.size();
                         
             ShapeWriter swrite(x, layers[i].shape);
@@ -441,9 +426,6 @@ public:
 
                 //object_post((t_object *)x, "x location: %d", j);
                 
-                double sc_freq = (layers[i].desc.speccentr[j] / (max_freq - min_freq)) + min_freq;
-                double sc_nrg = (layers[i].desc.energy[j] / (max_nrg - min_nrg)) + min_nrg;
-
                 for(int k = 0; k < x->l_mapcount; k++) {
                     // j is the frame
                     double curr_feature_datum;
